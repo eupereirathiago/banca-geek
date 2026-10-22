@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Banca Geek Collector Edition</title>
+    <meta name="description" content="Plataforma de preservação e leitura de quadrinhos clássicos com leitor de alta fidelidade, cronologias oficiais e acervo restaurado." />
+    <meta property="og:title" content="Banca Geek Collector Edition" />
+    <meta property="og:description" content="Plataforma de preservação e leitura de quadrinhos clássicos com leitor de alta fidelidade, cronologias oficiais e acervo restaurado." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      // Gracefully ignore Vite WebSocket HMR errors in iframe/preview environment
+      (function() {
+        function shouldSuppress(msg, stack, filename) {
+          var str = (String(msg || '') + ' ' + String(stack || '') + ' ' + String(filename || '')).toLowerCase();
+          return str.includes('websocket') || str.includes('@vite/client') || str.includes('without opened') || str.includes('connection closed');
+        }
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e ? e.reason : null;
+          var msg = reason ? (reason.message || String(reason)) : '';
+          var stack = reason ? (reason.stack || '') : '';
+          if (shouldSuppress(msg, stack, '')) {
+            e.preventDefault();
+            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+          }
+        }, true);
+        window.addEventListener('error', function(e) {
+          var msg = e ? (e.message || '') : '';
+          var filename = e ? (e.filename || '') : '';
+          var stack = e && e.error ? (e.error.stack || '') : '';
+          if (shouldSuppress(msg, stack, filename)) {
+            e.preventDefault();
+            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+          }
+        }, true);
+      })();
+    </script>
+  </head>
+  <body class="bg-[#12121F] text-[#F4EBD8] antialiased selection:bg-[#FFC531] selection:text-[#12121F] overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

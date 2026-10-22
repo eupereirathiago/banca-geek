@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-fundo-tinta: #12121f;
+  --color-card-dark: #1a1a2e;
+  --color-card-elevated: #22223b;
+  --color-amarelo-pulp: #ffc531;
+  --color-vermelho-gibi: #d62839;
+  --color-papel-antigo: #f4ebd8;
+  --color-cinza-quadro: #8a8ca5;
+  --font-anton: 'Anton', impact, sans-serif;
+  --font-manrope: 'Manrope', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  background-color: #12121f;
+  color: #f4ebd8;
+  color-scheme: dark;
+}
+
+.font-anton {
+  font-family: 'Anton', impact, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.font-manrope {
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom scrollbars for shelf rails */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #12121f;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2a2a40;
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #ffc531;
+}
+
+/* Vintage paper halftone pattern (subtle watermark texture) */
+.comic-grain {
+  background-image: radial-gradient(rgba(255, 197, 49, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Comic paper sepia mode */
+.sepia-paper {
+  filter: sepia(0.25) contrast(1.05) brightness(0.96);
+}
+
+.high-contrast-ink {
+  filter: contrast(1.2) brightness(0.98);
+}
