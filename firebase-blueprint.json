@@ -9,7 +9,7 @@
         "name": { "type": "string", "minLength": 1, "maxLength": 100 },
         "readBadge": { "type": "string", "maxLength": 150 },
         "readingMilestone": { "type": "string", "maxLength": 100 },
-        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "avatarUrl": { "type": "string", "maxLength": 150000 },
         "readIssuesCount": { "type": "integer" },
         "nextMilestoneCount": { "type": "integer" },
         "nextBadgeName": { "type": "string", "maxLength": 150 },

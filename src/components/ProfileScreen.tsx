@@ -18,17 +18,15 @@ import {
   Edit3,
   RotateCcw,
   Check,
-  Cloud,
-  Database,
-  Zap,
   RefreshCw,
   LogIn,
   LogOut,
-  Layers,
+  Camera,
+  Upload,
 } from 'lucide-react';
 import { subscribeToSyncStatus, syncLocalStateToCloud, CloudSyncStatus } from '../services/cloudSyncService';
 import { auth, googleSignIn, logout } from '../services/authService';
-import { getReaderStatistics } from '../services/databaseService';
+import { getReaderStatistics, getDatabaseState } from '../services/databaseService';
 
 interface ProfileScreenProps {
   userProfile: UserProfile;
@@ -240,106 +238,36 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
           <div className="bg-[#12121f] rounded-[3px] p-2.5 text-center border border-[#8a8ca5]/10">
             <span className="font-anton text-2xl text-[#16e1ff] block leading-none">
-              {userProfile.cachedStorageGb} GB
+              {Object.keys(getDatabaseState().collection).length || userProfile.completedSagasCount}
             </span>
             <span className="text-[10px] font-anton uppercase text-[#8a8ca5] tracking-wider mt-1 block">
-              Cache Seguro
+              Na Minha Estante
             </span>
           </div>
         </div>
       </div>
 
-      {/* Cloud Database & Performance Cache Section */}
-      <div className="bg-[#1a1a2e] rounded-[4px] border border-[#16e1ff]/30 p-4 mb-5 shadow-xl relative overflow-hidden">
-        <div className="flex items-center justify-between mb-3 border-b border-[#8a8ca5]/20 pb-2">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[4px] bg-[#16e1ff]/15 text-[#16e1ff]">
-              <Database className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="font-anton text-sm uppercase tracking-wide text-[#f4ebd8]">
-                Banco de Dados em Nuvem &amp; Cache
-              </h2>
-              <span className="text-[10px] text-[#8a8ca5] block">
-                Google Cloud Firestore • Alta Performance &amp; Offline Multi-Tab
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10b981] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10b981]"></span>
-            </span>
-            <span className="text-[10px] font-anton text-[#10b981] uppercase tracking-wider">
-              {currentUser ? 'NUVEM ATIVA' : 'LOCAL + CACHE'}
-            </span>
-          </div>
-        </div>
-
-        {/* Sync feedback notification */}
-        {syncFeedback && (
-          <div className="mb-3 px-3 py-1.5 bg-[#16e1ff]/10 border border-[#16e1ff]/40 rounded-[3px] text-xs text-[#16e1ff] flex items-center gap-2 animate-fade-in">
-            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>{syncFeedback}</span>
-          </div>
-        )}
-
-        {/* Multi-Tier Caching Architecture Indicators */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="bg-[#12121f] p-2.5 rounded-[3px] border border-[#8a8ca5]/15 text-center">
-            <div className="flex items-center justify-center gap-1 text-[#ffc531] mb-1">
-              <Zap className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-anton">0ms RAM</span>
-            </div>
-            <span className="text-[9px] text-[#8a8ca5] uppercase font-anton tracking-wider block">
-              Cache Leitor 60FPS
-            </span>
-          </div>
-
-          <div className="bg-[#12121f] p-2.5 rounded-[3px] border border-[#8a8ca5]/15 text-center">
-            <div className="flex items-center justify-center gap-1 text-[#16e1ff] mb-1">
-              <Layers className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-anton">INDEXEDDB</span>
-            </div>
-            <span className="text-[9px] text-[#8a8ca5] uppercase font-anton tracking-wider block">
-              Multi-Tab Offline
-            </span>
-          </div>
-
-          <div className="bg-[#12121f] p-2.5 rounded-[3px] border border-[#8a8ca5]/15 text-center">
-            <div className="flex items-center justify-center gap-1 text-[#10b981] mb-1">
-              <Cloud className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-anton">FIRESTORE</span>
-            </div>
-            <span className="text-[9px] text-[#8a8ca5] uppercase font-anton tracking-wider block">
-              Sync em Nuvem
-            </span>
-          </div>
-        </div>
-
-        {/* Account Authentication Banner */}
-        <div className="bg-[#12121f] rounded-[4px] p-3 border border-[#8a8ca5]/20 mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Reader Account Section (Completely clean - no internal database telemetry) */}
+      <div className="bg-[#1a1a2e] rounded-[4px] border border-[#ffc531]/30 p-4 mb-5 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             {currentUser?.photoURL ? (
               <img
                 src={currentUser.photoURL}
                 alt={currentUser.displayName || 'Google'}
-                className="w-8 h-8 rounded-full border border-[#ffc531]"
+                className="w-9 h-9 rounded-full border border-[#ffc531]"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-[#22223b] flex items-center justify-center text-[#ffc531]">
-                <Cloud className="w-4 h-4" />
+              <div className="w-9 h-9 rounded-full bg-[#12121f] border border-[#8a8ca5]/30 flex items-center justify-center text-[#ffc531]">
+                <Award className="w-4 h-4" />
               </div>
             )}
             <div>
               <span className="text-xs font-anton tracking-wide text-[#f4ebd8] block">
-                {currentUser ? (currentUser.displayName || currentUser.email) : 'Conta Não Vinculada à Nuvem'}
+                {currentUser ? (currentUser.displayName || currentUser.email) : 'Conta de Leitor Ativa'}
               </span>
-              <span className="text-[10px] text-[#8a8ca5]">
-                {currentUser
-                  ? `UID: ${currentUser.uid.slice(0, 10)}... • Google Cloud Firestore`
-                  : 'Faça login com sua conta Google para sincronizar entre todos os aparelhos'}
+              <span className="text-[11px] text-[#8a8ca5]">
+                {currentUser ? currentUser.email : 'Seu histórico e estante ficam salvos com segurança'}
               </span>
             </div>
           </div>
@@ -347,16 +275,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           {currentUser ? (
             <button
               onClick={handleGoogleDisconnect}
-              className="px-2.5 py-1.5 bg-[#1a1a2e] hover:bg-[#d62839]/20 border border-[#8a8ca5]/30 hover:border-[#d62839] rounded-[3px] text-[11px] font-anton tracking-wider uppercase text-[#8a8ca5] hover:text-[#d62839] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-1.5 bg-[#12121f] hover:bg-[#d62839]/20 border border-[#8a8ca5]/30 hover:border-[#d62839] rounded-[3px] text-xs font-anton tracking-wider uppercase text-[#8a8ca5] hover:text-[#d62839] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
-              <LogOut className="w-3 h-3" />
+              <LogOut className="w-3.5 h-3.5" />
               Desconectar
             </button>
           ) : (
             <button
               onClick={handleGoogleConnect}
               disabled={isAuthenticating}
-              className="px-3 py-1.5 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md disabled:opacity-50"
+              className="px-3.5 py-1.5 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md disabled:opacity-50"
             >
               {isAuthenticating ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -366,34 +294,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               {isAuthenticating ? 'Conectando...' : 'Conectar Conta Google'}
             </button>
           )}
-        </div>
-
-        {/* Cloud Persistence Stat Counters & Manual Sync */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#8a8ca5]/15">
-          <div className="flex items-center gap-3 text-[11px] text-[#8a8ca5]">
-            <span>Progresso: <strong className="text-[#f4ebd8] font-anton">{stats.totalComicsRead} HQs</strong></span>
-            <span>Favoritos: <strong className="text-[#ffc531] font-anton">{stats.totalFavorites}</strong></span>
-            <span>Marcadores: <strong className="text-[#16e1ff] font-anton">{stats.totalBookmarks}</strong></span>
-            <span>Avaliações: <strong className="text-[#10b981] font-anton">{stats.totalReviews}</strong></span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleManualCloudSync}
-              disabled={cloudStatus.isSyncing}
-              className="px-2.5 py-1 bg-[#12121f] hover:bg-[#22223b] border border-[#16e1ff]/40 text-[#16e1ff] hover:text-[#ffc531] rounded-[3px] text-[10px] font-anton tracking-wider uppercase flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3 h-3 ${cloudStatus.isSyncing ? 'animate-spin text-[#ffc531]' : ''}`} />
-              {cloudStatus.isSyncing ? 'Sincronizando...' : 'Sincronizar Nuvem'}
-            </button>
-            <button
-              onClick={onOpenCacheManager}
-              className="px-2.5 py-1 bg-[#12121f] hover:bg-[#22223b] border border-[#8a8ca5]/30 text-[#8a8ca5] hover:text-[#f4ebd8] rounded-[3px] text-[10px] font-anton tracking-wider uppercase flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <HardDrive className="w-3 h-3" />
-              Limpar / Ajustar Cache
-            </button>
-          </div>
         </div>
       </div>
 
@@ -523,10 +423,45 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-anton tracking-wider uppercase text-[#f4ebd8] mb-1.5">
-                  Avatar
-                </label>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-anton tracking-wider uppercase text-[#f4ebd8]">
+                    Avatar (Heróis ou Seu Aparelho)
+                  </label>
+                  <label className="flex items-center gap-1 text-[10px] font-anton text-[#16e1ff] hover:text-[#ffc531] cursor-pointer">
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>+ FOTO DO APARELHO</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const img = new Image();
+                          img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const max = 240;
+                            let w = img.width;
+                            let h = img.height;
+                            if (w > h && w > max) { h = Math.round((h * max) / w); w = max; }
+                            else if (h > max) { w = Math.round((w * max) / h); h = max; }
+                            canvas.width = w; canvas.height = h;
+                            const ctx = canvas.getContext('2d');
+                            if (ctx) {
+                              ctx.drawImage(img, 0, 0, w, h);
+                              setEditAvatar(canvas.toDataURL('image/jpeg', 0.85));
+                            }
+                          };
+                          img.src = event.target?.result as string;
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
                   {AVATAR_OPTIONS.map((av) => {
                     const isSelected = editAvatar === av.url;
                     return (
@@ -536,9 +471,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                         onClick={() => setEditAvatar(av.url)}
                         className={`relative rounded-full aspect-square overflow-hidden border-2 transition-all p-0.5 cursor-pointer ${
                           isSelected
-                            ? 'border-[#ffc531] ring-2 ring-[#ffc531]/40'
+                            ? 'border-[#ffc531] ring-2 ring-[#ffc531]/40 scale-105'
                             : 'border-[#8a8ca5]/30 opacity-70 hover:opacity-100'
                         }`}
+                        title={`${av.label} (${av.hero})`}
                       >
                         <img src={av.url} alt={av.label} className="w-full h-full object-cover rounded-full" />
                         {isSelected && (

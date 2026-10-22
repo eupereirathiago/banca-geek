@@ -47,7 +47,7 @@ service cloud.firestore {
              data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
              data.readBadge is string && data.readBadge.size() <= 150 &&
              data.readingMilestone is string && data.readingMilestone.size() <= 100 &&
-             data.avatarUrl is string && data.avatarUrl.size() <= 500 &&
+             data.avatarUrl is string && data.avatarUrl.size() <= 150000 &&
              data.createdAt is string && data.createdAt.size() <= 50 &&
              (!('bio' in data) || (data.bio is string && data.bio.size() <= 500)) &&
              (!('favoritePublisher' in data) || (data.favoritePublisher is string && data.favoritePublisher.size() <= 100));

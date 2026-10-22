@@ -535,3 +535,44 @@ export async function pushCloudReview(review: ComicReview): Promise<void> {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
+
+/**
+ * Cloud & Server persistence helper for user profile
+ */
+export async function pushCloudProfile(profile: any): Promise<void> {
+  const user = auth.currentUser;
+  const uid = user ? user.uid : (profile.name ? 'u_' + encodeURIComponent(profile.name.toLowerCase().trim().replace(/[^a-z0-9]/g, '_')) : 'default_reader');
+  const targetPath = `users/${uid}`;
+
+  try {
+    await setDoc(
+      doc(db, 'users', uid),
+      {
+        userId: uid,
+        name: (profile.name || 'LEITOR').slice(0, 100),
+        readBadge: (profile.readBadge || 'SELO INICIANTE').slice(0, 150),
+        readingMilestone: (profile.readingMilestone || 'COMEÇANDO DO ZERO').slice(0, 100),
+        avatarUrl: profile.avatarUrl || 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=300&q=80',
+        readIssuesCount: Number(profile.readIssuesCount) || 0,
+        nextMilestoneCount: Number(profile.nextMilestoneCount) || 1,
+        nextBadgeName: (profile.nextBadgeName || 'PRIMEIRA LEITURA').slice(0, 150),
+        completedSagasCount: Number(profile.completedSagasCount) || 0,
+        favoritePublisher: (profile.favoritePublisher || 'DC Comics').slice(0, 100),
+        bio: (profile.bio || '').slice(0, 500),
+        createdAt: profile.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.warn('[CloudSync] Aviso ao gravar perfil no Firestore:', error);
+  }
+
+  // Also sync to server backend database
+  fetch('/api/db/profile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(profile),
+  }).catch(() => {});
+}
+

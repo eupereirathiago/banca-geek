@@ -2022,6 +2022,27 @@ app.post('/api/db/sync', (req, res) => {
   res.json({ success: true, data: serverDatabase });
 });
 
+// 2b. Save user profile
+app.post('/api/db/profile', (req, res) => {
+  const profile = req.body;
+  if (!profile || !profile.name) {
+    return res.status(400).json({ success: false, message: 'Perfil inválido' });
+  }
+
+  loadServerDatabase();
+  if (!(serverDatabase as any).profiles) {
+    (serverDatabase as any).profiles = {};
+  }
+  const profileKey = (profile.name || 'leitor').trim().toLowerCase();
+  (serverDatabase as any).profiles[profileKey] = {
+    ...profile,
+    updatedAt: new Date().toISOString(),
+  };
+
+  saveServerDatabase();
+  res.json({ success: true, profile: (serverDatabase as any).profiles[profileKey] });
+});
+
 // 3. Save single reading progress
 app.post('/api/db/progress', (req, res) => {
   const { comicId, currentPage, totalPages, progressPercent, isCompleted, comicTitle } = req.body;

@@ -424,7 +424,6 @@ export default function App() {
           setUserProfile(createdProfile);
           setIsProfileModalOpen(false);
         }}
-        defaultName="THIAGO"
       />
 
       {/* Global Modals */}

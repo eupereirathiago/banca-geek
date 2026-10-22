@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "lastUpdated": "2026-10-22T01:43:20.907Z",
+  "lastUpdated": "2026-10-22T23:49:36.401Z",
   "readingProgress": {
     "vault-f-0001-1UCcogyj": {
       "comicId": "vault-f-0001-1UCcogyj",
@@ -89,5 +89,12 @@
     "fitMode": "contain",
     "autoAdvance": false,
     "autoAdvanceSeconds": 8
+  },
+  "profiles": {
+    "teste_leitor": {
+      "name": "TESTE_LEITOR",
+      "readBadge": "SELO INICIANTE",
+      "updatedAt": "2026-10-22T23:49:36.401Z"
+    }
   }
 }

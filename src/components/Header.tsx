@@ -84,29 +84,6 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Action Icons & Avatar */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Cloud Database Persistence Indicator */}
-          <button
-            onClick={onOpenProfile}
-            title={
-              cloudStatus.isCloudConnected
-                ? `Nuvem Ativa (Firestore) - ${cloudStatus.isSyncing ? 'Sincronizando...' : 'Tudo salvo em nuvem com cache local'}`
-                : 'Banco na Nuvem Ativo (Clique para ver status ou conectar)'
-            }
-            className={`p-1.5 rounded-full transition-colors flex items-center gap-1 cursor-pointer ${
-              cloudStatus.isCloudConnected
-                ? 'text-[#10b981] hover:bg-[#1a1a2e]'
-                : 'text-[#16e1ff] hover:text-[#ffc531] hover:bg-[#1a1a2e]'
-            }`}
-          >
-            {cloudStatus.isSyncing ? (
-              <RefreshCw className="w-4 h-4 animate-spin text-[#ffc531]" />
-            ) : (
-              <Cloud className="w-4 h-4 fill-current/20" />
-            )}
-            <span className="hidden sm:inline-block text-[9px] font-anton tracking-wider uppercase">
-              {cloudStatus.isSyncing ? 'SYNC...' : cloudStatus.isCloudConnected ? 'NUVEM ON' : 'NUVEM'}
-            </span>
-          </button>
 
           {showSearch && onOpenSearch && (
             <button

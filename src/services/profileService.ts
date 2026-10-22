@@ -151,12 +151,15 @@ export function getReadingBadge(count: number) {
 }
 
 export const AVATAR_OPTIONS = [
-  { id: 'batman', label: 'Morcego', url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=250&q=80' },
-  { id: 'spiderman', label: 'Aranha', url: 'https://images.unsplash.com/photo-1635863138275-d9b33299680b?auto=format&fit=crop&w=250&q=80' },
-  { id: 'wolverine', label: 'Wolverine', url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=250&q=80' },
-  { id: 'superman', label: 'Superman', url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=250&q=80' },
-  { id: 'cosmic', label: 'Cósmico', url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=250&q=80' },
-  { id: 'reader', label: 'Leitor', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80' },
+  { id: 'spiderman', label: 'Homem-Aranha', hero: 'Marvel', url: 'https://images.unsplash.com/photo-1635863138275-d9b33299680b?auto=format&fit=crop&w=300&q=80' },
+  { id: 'batman', label: 'Batman', hero: 'DC Comics', url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=300&q=80' },
+  { id: 'superman', label: 'Superman', hero: 'DC Comics', url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=300&q=80' },
+  { id: 'wolverine', label: 'Wolverine', hero: 'Marvel', url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80' },
+  { id: 'ironman', label: 'Homem de Ferro', hero: 'Marvel', url: 'https://images.unsplash.com/photo-1626278664285-f796b9ee7806?auto=format&fit=crop&w=300&q=80' },
+  { id: 'wonderwoman', label: 'Mulher-Maravilha', hero: 'DC Comics', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80' },
+  { id: 'deadpool', label: 'Deadpool', hero: 'Marvel', url: 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=300&q=80' },
+  { id: 'panther', label: 'Pantera Negra', hero: 'Marvel', url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=300&q=80' },
+  { id: 'flash', label: 'Flash', hero: 'DC Comics', url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=300&q=80' },
 ];
 
 export function getStoredProfile(): UserProfile | null {
@@ -199,6 +202,11 @@ export function createInitialProfile(input: {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
   } catch {}
 
+  // Asynchronously push to database
+  import('./cloudSyncService').then(({ pushCloudProfile }) => {
+    pushCloudProfile(profile).catch(() => {});
+  }).catch(() => {});
+
   return profile;
 }
 
@@ -221,6 +229,11 @@ export function updateStoredProfile(updated: Partial<UserProfile>): UserProfile 
   try {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(merged));
   } catch {}
+
+  // Asynchronously push to database
+  import('./cloudSyncService').then(({ pushCloudProfile }) => {
+    pushCloudProfile(merged).catch(() => {});
+  }).catch(() => {});
 
   return merged;
 }
