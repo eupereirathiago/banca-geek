@@ -108,11 +108,11 @@ export default function App() {
   const [isCacheModalOpen, setIsCacheModalOpen] = useState<boolean>(false);
   const [isLocalFileModalOpen, setIsLocalFileModalOpen] = useState<boolean>(false);
 
-  // Silent automatic sync from backend in the background
+  // Silent automatic sync from Google Drive & backend: always up-to-date on entry, focus and recurring
   useEffect(() => {
     let isMounted = true;
-    const loadComicsSilently = () => {
-      fetchAcervoComics()
+    const loadComicsSilently = (isInitial: boolean = false) => {
+      fetchAcervoComics(isInitial)
         .then((liveComics) => {
           if (!isMounted) return;
           if (liveComics && Array.isArray(liveComics) && liveComics.length > 0) {
@@ -120,11 +120,11 @@ export default function App() {
             if (realComics.length > 0) {
               const enrichedComics = mergeComicsWithSavedProgress(realComics);
               setComics((prev) => {
-                // Avoid re-renders if the list has not changed
-                if (prev.length === enrichedComics.length && prev[0]?.id === enrichedComics[0]?.id) {
-                  return prev;
+                // Update when length changes or editions differ
+                if (prev.length !== enrichedComics.length || prev[0]?.id !== enrichedComics[0]?.id) {
+                  return enrichedComics;
                 }
-                return enrichedComics;
+                return prev;
               });
               setSelectedComic((prev) => {
                 if (!prev) return enrichedComics[0];
@@ -140,12 +140,30 @@ export default function App() {
         .catch(() => {});
     };
 
-    loadComicsSilently();
-    // Periodically refresh comics behind the scenes every 30 seconds
-    const interval = setInterval(loadComicsSilently, 30000);
+    // 1. Immediate sync on entry
+    loadComicsSilently(true);
+
+    // 2. Continuous background sync every 20 seconds
+    const interval = setInterval(() => loadComicsSilently(false), 20000);
+
+    // 3. Instant auto-sync whenever the user returns to the tab or focuses the app window
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadComicsSilently(false);
+      }
+    };
+    const handleFocus = () => {
+      loadComicsSilently(false);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
     return () => {
       isMounted = false;
       clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 

@@ -1005,21 +1005,37 @@ app.get('/api/acervo/comics', async (req, res) => {
   res.setHeader('X-DRM-Protection', SECURE_VAULT_CONFIG.sessionPrefix);
   res.setHeader('X-Content-Type-Options', 'nosniff');
 
-  // Silent automatic background sync: triggers completely behind the scenes
-  const isStale = Date.now() - lastSyncTime > 120000;
-  if (!isSyncing && (cachedAcervo.length === 0 || isStale)) {
-    isSyncing = true;
-    syncFromCloudVault()
-      .then((r) => {
+  // Silent automatic background sync: triggers immediately if force requested or if stale (> 20s)
+  const force = req.query.force === 'true' || req.query.sync === 'true';
+  const isStale = Date.now() - lastSyncTime > 20000;
+  if (!isSyncing && (cachedAcervo.length === 0 || isStale || force)) {
+    if (force) {
+      try {
+        isSyncing = true;
+        const r = await syncFromCloudVault();
         lastSyncTime = Date.now();
         if (r.newlyFound > 0) {
-          console.log(`[Auto-Sync Backend] ${r.newlyFound} novas HQs carregadas da nuvem.`);
+          console.log(`[Auto-Sync Backend] Sincronização sob demanda: ${r.newlyFound} novas HQs.`);
         }
-      })
-      .catch(() => {})
-      .finally(() => {
+      } catch (err: any) {
+        console.warn('[Auto-Sync Backend] Erro no sync sob demanda:', err?.message || err);
+      } finally {
         isSyncing = false;
-      });
+      }
+    } else {
+      isSyncing = true;
+      syncFromCloudVault()
+        .then((r) => {
+          lastSyncTime = Date.now();
+          if (r.newlyFound > 0) {
+            console.log(`[Auto-Sync Backend] ${r.newlyFound} novas HQs carregadas da nuvem.`);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          isSyncing = false;
+        });
+    }
   }
 
   loadServerDatabase();
@@ -2388,4 +2404,9 @@ async function startServer() {
   }, 3 * 60 * 1000);
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
+export { app, startServer };

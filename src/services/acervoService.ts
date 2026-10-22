@@ -13,9 +13,10 @@ export interface AcervoStatus {
   sessionTimestamp: string;
 }
 
-export const fetchAcervoComics = async (): Promise<ComicIssue[]> => {
+export const fetchAcervoComics = async (forceSync: boolean = false): Promise<ComicIssue[]> => {
   try {
-    const res = await fetch('/api/acervo/comics');
+    const url = forceSync ? '/api/acervo/comics?force=true' : '/api/acervo/comics';
+    const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`Erro de resposta do gateway: ${res.status}`);
     }

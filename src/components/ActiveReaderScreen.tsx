@@ -60,6 +60,8 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   const [showControls, setShowControls] = useState<boolean>(true);
   const [fitMode, setFitMode] = useState<'contain' | 'width' | 'height'>('contain');
+  const [controlsVisible, setControlsVisible] = useState<boolean>(true);
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Settings
   const [brightness, setBrightness] = useState<number>(100);
@@ -80,6 +82,35 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
     setShowToast(msg);
     setTimeout(() => setShowToast(null), 2500);
   }, []);
+
+  // Auto-hide controls in Fullscreen immersive mode after 3 seconds of inactivity
+  const resetControlsTimeout = useCallback(() => {
+    setControlsVisible(true);
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+    if (isFullscreen) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setControlsVisible(false);
+      }, 3000);
+    }
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    if (isFullscreen) {
+      resetControlsTimeout();
+    } else {
+      setControlsVisible(true);
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    }
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    };
+  }, [isFullscreen, resetControlsTimeout]);
 
   // Sync and save progress immediately whenever currentPage changes
   const prevPageRef = useRef<number>(currentPage);
@@ -184,14 +215,16 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
     if (!isFullscreen) {
       setIsFullscreen(true);
       setShowControls(false);
-      triggerToast('Imagem do Quadrinho em Tela Cheia (Toque ou ESC para sair)');
+      resetControlsTimeout();
+      triggerToast('Modo Imersivo Ativado: Header e Barra de Navegação Ocultos');
     } else {
       if (document.fullscreenElement) {
         document.exitFullscreen?.().catch(() => {});
       }
       setIsFullscreen(false);
       setShowControls(true);
-      triggerToast('Modo normal restaurado');
+      setControlsVisible(true);
+      triggerToast('Modo Padrão Restaurado (Header e Barra Visíveis)');
     }
   };
 
@@ -269,11 +302,12 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
 
             <button
               onClick={toggleFullscreen}
-              className="p-1.5 text-[#f4ebd8] hover:text-[#ffc531] hover:bg-[#1a1a2e] rounded-full transition-colors cursor-pointer"
-              aria-label="Tela Cheia"
-              title="Tela Cheia (Atalho: F)"
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-[#1a1a2e] hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] border border-[#ffc531]/40 hover:border-[#ffc531] rounded-[4px] text-xs font-anton tracking-wider uppercase transition-all cursor-pointer shadow-xs"
+              aria-label="Modo Imersivo (Tela Cheia)"
+              title="Modo Tela Cheia Imersivo (Atalho: F) - Oculta header e barra de navegação"
             >
-              {isFullscreen ? <Minimize2 className="w-5 h-5 text-[#ffc531]" /> : <Maximize2 className="w-5 h-5" />}
+              {isFullscreen ? <Minimize2 className="w-3.5 h-3.5 text-[#ffc531]" /> : <Maximize2 className="w-3.5 h-3.5 text-[#ffc531]" />}
+              <span className="hidden sm:inline">{isFullscreen ? 'SAIR IMERSÃO' : 'MODO IMERSIVO'}</span>
             </button>
 
             <img
@@ -364,6 +398,8 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
       {/* 3. Main Reading Stage */}
       <div
         ref={readerStageRef}
+        onMouseMove={resetControlsTimeout}
+        onTouchStart={resetControlsTimeout}
         className={`relative flex items-center justify-center ${
           isFullscreen
             ? 'fixed inset-0 z-50 w-screen h-screen bg-black p-0 m-0 overflow-hidden'
@@ -375,23 +411,31 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
           width: isFullscreen ? '100vw' : undefined,
         }}
       >
-        {/* Floating Top-Right Exit Button inside Fullscreen stage */}
+        {/* Floating Top-Right Exit Button inside Fullscreen stage with auto-hide */}
         {isFullscreen && (
-          <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
+          <div
+            className={`absolute top-4 right-4 z-40 flex items-center gap-2 transition-all duration-300 ${
+              controlsVisible ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none -translate-y-2'
+            }`}
+          >
             <button
               onClick={toggleFullscreen}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#12121f]/85 hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] rounded-full border border-white/20 shadow-2xl backdrop-blur-md text-xs font-anton tracking-wider uppercase transition-all cursor-pointer"
-              title="Sair da Tela Cheia (ESC ou duplo-clique)"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#12121f]/90 hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] rounded-full border border-white/20 shadow-2xl backdrop-blur-md text-xs font-anton tracking-wider uppercase transition-all cursor-pointer"
+              title="Sair do Modo Imersivo (ESC ou toque)"
             >
               <Minimize2 className="w-4 h-4" />
-              <span>Sair da Tela Cheia</span>
+              <span>Sair da Imersão (ESC)</span>
             </button>
           </div>
         )}
 
-        {/* Floating Bottom Navigator inside Fullscreen stage */}
+        {/* Floating Bottom Navigator inside Fullscreen stage with auto-hide */}
         {isFullscreen && (
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 bg-[#12121f]/85 hover:bg-[#12121f]/95 backdrop-blur-md border border-[#ffc531]/60 px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-3 text-xs select-none transition-opacity opacity-75 hover:opacity-100">
+          <div
+            className={`absolute bottom-5 left-1/2 -translate-x-1/2 z-40 bg-[#12121f]/90 hover:bg-[#12121f]/95 backdrop-blur-md border border-[#ffc531]/60 px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-3 text-xs select-none transition-all duration-300 ${
+              controlsVisible ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none translate-y-4'
+            }`}
+          >
             <button
               onClick={goToPrevPage}
               disabled={currentPage <= 1}
@@ -426,6 +470,16 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
               title="Ajuste de Imagem (Tela / Largura / Altura)"
             >
               {fitMode === 'contain' ? 'AJUSTE: TELA' : fitMode === 'width' ? 'AJUSTE: LARGURA' : 'AJUSTE: ALTURA'}
+            </button>
+
+            <span className="w-px h-4 bg-white/20" />
+
+            <button
+              onClick={toggleFullscreen}
+              className="p-1 text-[#f4ebd8] hover:text-[#d62839] cursor-pointer"
+              title="Sair do Modo Imersivo"
+            >
+              <Minimize2 className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -572,9 +626,15 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                 </div>
 
                 <div
-                  onClick={() => setShowControls((prev) => !prev)}
+                  onClick={() => {
+                    if (isFullscreen) {
+                      setControlsVisible((prev) => !prev);
+                    } else {
+                      setShowControls((prev) => !prev);
+                    }
+                  }}
                   className="absolute inset-y-0 left-2/5 right-2/5 cursor-pointer z-10"
-                  title="Alternar Controles (ou Duplo Clique para Tela Cheia)"
+                  title="Alternar Controles (ou Duplo Clique para Modo Imersivo)"
                 />
 
                 <div
@@ -767,10 +827,11 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
 
             <button
               onClick={toggleFullscreen}
-              className="flex items-center gap-1.5 px-3 py-1 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] rounded-[4px] font-anton text-xs uppercase tracking-wider font-bold cursor-pointer transition-colors shadow-md"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] rounded-[4px] font-anton text-xs uppercase tracking-wider font-bold cursor-pointer transition-colors shadow-md"
+              title="Alternar Modo de Tela Cheia Imersivo (Atalho: F) - Oculta header e barra de navegação"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              <span>{isFullscreen ? 'SAIR TELA CHEIA' : 'TELA CHEIA (F)'}</span>
+              <span>{isFullscreen ? 'SAIR DA IMERSÃO' : 'MODO IMERSIVO (F)'}</span>
             </button>
           </div>
         </div>
@@ -860,6 +921,28 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                 onChange={(e) => setShowWatermarks(e.target.checked)}
                 className="w-4 h-4 accent-[#ffc531] cursor-pointer"
               />
+            </div>
+
+            {/* Modo Tela Cheia Imersivo */}
+            <div className="mb-4 flex items-center justify-between pt-2 border-t border-[#8a8ca5]/15">
+              <div>
+                <span className="text-xs font-bold text-[#f4ebd8] block">Modo Tela Cheia (Imersão Total)</span>
+                <span className="text-[10px] text-[#8a8ca5]">Oculta o header e a barra de navegação</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  toggleFullscreen();
+                  setShowSettingsModal(false);
+                }}
+                className={`px-3 py-1 rounded-[3px] text-xs font-anton tracking-wider uppercase border transition-colors cursor-pointer ${
+                  isFullscreen
+                    ? 'bg-[#10b981] text-[#12121f] border-[#10b981] font-bold'
+                    : 'bg-[#ffc531] text-[#12121f] border-[#ffc531] font-bold'
+                }`}
+              >
+                {isFullscreen ? 'ATIVO' : 'ATIVAR'}
+              </button>
             </div>
 
             <button
