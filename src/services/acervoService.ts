@@ -21,11 +21,25 @@ export const fetchAcervoComics = async (forceSync: boolean = false): Promise<Com
       throw new Error(`Erro de resposta do gateway: ${res.status}`);
     }
     const data = await res.json();
-    return data.editions || [];
+    if (Array.isArray(data.editions) && data.editions.length > 0) {
+      return data.editions;
+    }
   } catch (error) {
-    console.warn('Usando catálogo em cache local do gateway:', error);
-    return [];
+    console.warn('Aviso ao consultar /api/acervo/comics:', error);
   }
+
+  // Fallback to locally saved editions if network response is pending or offline
+  try {
+    const cached = localStorage.getItem('banca_geek_synced_comics_v3');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {}
+
+  return [];
 };
 
 export const fetchAcervoStatus = async (): Promise<AcervoStatus | null> => {

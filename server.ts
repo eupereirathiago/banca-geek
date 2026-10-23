@@ -10,6 +10,7 @@ import AdmZip from 'adm-zip';
 import { execSync } from 'child_process';
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { createExtractorFromData } from 'node-unrar-js';
+import initialRepoEditions from './src/data/repoEditions.json';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,14 @@ const PORT = 3000;
 
 app.use(express.json({ limit: '150mb' }));
 app.use(express.urlencoded({ extended: true, limit: '150mb' }));
+
+// Normalize routes so both /api/acervo/* and /acervo/* work seamlessly on Vercel
+app.use((req, res, next) => {
+  if (req.url && !req.url.startsWith('/api') && (req.url.startsWith('/acervo') || req.url.startsWith('/db'))) {
+    req.url = '/api' + req.url;
+  }
+  next();
+});
 
 // ----------------------------------------------------
 // GEMINI AI ENGINE SETUP (@google/genai)
@@ -36,8 +45,11 @@ const ai = new GoogleGenAI({
 // ----------------------------------------------------
 // PERSISTENT DATABASE ENGINE (Local JSON with ACID writes)
 // ----------------------------------------------------
-const DATA_DIR = path.resolve(__dirname, 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+const isVercel = Boolean(process.env.VERCEL);
+const DATA_DIR = isVercel ? path.join('/tmp', 'data') : path.resolve(__dirname, 'data');
+try {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+} catch {}
 const DB_FILE_PATH = path.join(DATA_DIR, 'banca_geek_database.json');
 
 export interface ServerUserDatabase {
@@ -151,9 +163,10 @@ interface VaultItemMapping {
 const vaultStorageMapping = new Map<string, VaultItemMapping>();
 
 // Cache and persistent directories for multi-format comic archives, covers, and extracted pages
-const ARCHIVE_CACHE_DIR = path.resolve(__dirname, 'node_modules/.cache/comic_archives');
-const EXTRACTED_CACHE_DIR = path.resolve(__dirname, 'node_modules/.cache/comic_extracted');
-const COVER_CACHE_DIR = path.resolve(__dirname, 'node_modules/.cache/comic_covers');
+const BASE_CACHE_DIR = isVercel ? '/tmp' : path.resolve(__dirname, 'node_modules/.cache');
+const ARCHIVE_CACHE_DIR = path.resolve(BASE_CACHE_DIR, 'comic_archives');
+const EXTRACTED_CACHE_DIR = path.resolve(BASE_CACHE_DIR, 'comic_extracted');
+const COVER_CACHE_DIR = path.resolve(BASE_CACHE_DIR, 'comic_covers');
 const COVERS_DATA_DIR = path.resolve(DATA_DIR, 'covers');
 try {
   if (!fs.existsSync(ARCHIVE_CACHE_DIR)) fs.mkdirSync(ARCHIVE_CACHE_DIR, { recursive: true });
@@ -558,32 +571,29 @@ interface AcervoEdition {
   pages: { pageNumber: number; title: string; chapter: string; speechSnippets: string[]; imageUrl?: string }[];
 }
 
-// In-memory server cache of master editions (seeded from Google Drive repository 14R42LfMQvsU7SxkB5mNgPOTIh-i4u5Ch)
-let cachedAcervo: AcervoEdition[] = [];
+// In-memory server cache of master editions (bundled directly from repoEditions.json so Vercel always has all comics)
+let cachedAcervo: AcervoEdition[] = Array.isArray(initialRepoEditions)
+  ? (initialRepoEditions as unknown as AcervoEdition[])
+  : [];
 
 try {
-  const repoDataPath = path.resolve(__dirname, 'src/data/repoEditions.json');
-  if (fs.existsSync(repoDataPath)) {
-    const rawData = JSON.parse(fs.readFileSync(repoDataPath, 'utf-8'));
-    if (Array.isArray(rawData) && rawData.length > 0) {
-      cachedAcervo = rawData;
-      console.log(`[Secure Gateway] Repositório inicializado: ${cachedAcervo.length} edições reais do Google Drive.`);
-      for (const ed of cachedAcervo) {
-        vaultStorageMapping.set(ed.id, {
-          comicId: ed.id,
-          coverDriveFileId: (ed as any).driveFileId,
-          zipDriveFileId: (ed as any).driveFileId,
-          pages: (ed.pages || []).map((p: any) => ({
-            pageNumber: p.pageNumber,
-            driveFileId: (ed as any).driveFileId,
-            name: p.title,
-          })),
-        });
-      }
+  if (cachedAcervo.length > 0) {
+    console.log(`[Secure Gateway] Repositório inicializado: ${cachedAcervo.length} edições reais pré-carregadas.`);
+    for (const ed of cachedAcervo) {
+      vaultStorageMapping.set(ed.id, {
+        comicId: ed.id,
+        coverDriveFileId: (ed as any).driveFileId,
+        zipDriveFileId: (ed as any).driveFileId,
+        pages: (ed.pages || []).map((p: any) => ({
+          pageNumber: p.pageNumber,
+          driveFileId: (ed as any).driveFileId,
+          name: p.title,
+        })),
+      });
     }
   }
 } catch (err: any) {
-  console.warn('[Secure Gateway] Aviso ao carregar repoEditions.json:', err?.message || err);
+  console.warn('[Secure Gateway] Aviso ao carregar repoEditions pré-carregado:', err?.message || err);
 }
 
 function syncDatabaseCustomComicsWithAcervo() {
