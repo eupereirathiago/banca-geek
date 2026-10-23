@@ -329,15 +329,15 @@ export const IssueDetailsScreen: React.FC<IssueDetailsScreenProps> = ({
       </div>
 
       {comic.drivePreviewUrl && (
-        <div className="mb-4 text-center">
+        <div className="mb-4">
           <a
             href={comic.drivePreviewUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-[#12121f] hover:bg-[#22223b] border border-[#8a8ca5]/20 hover:border-[#16e1ff] text-xs text-[#16e1ff] font-semibold transition-all shadow-xs"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[#16e1ff]/10 hover:bg-[#16e1ff]/20 border border-[#16e1ff] text-[#16e1ff] rounded-[4px] font-anton text-xs uppercase tracking-wider transition-all shadow-md group"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Visualizador Oficial Google Drive (Alternativo)</span>
+            <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            <span>LER DIRETO NO GOOGLE DRIVE OFICIAL</span>
           </a>
         </div>
       )}
