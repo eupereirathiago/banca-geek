@@ -198,13 +198,7 @@ export const IssueDetailsScreen: React.FC<IssueDetailsScreenProps> = ({
             alt={comic.title}
             onError={(e: any) => {
               const el = e.currentTarget;
-              const retries = parseInt(el.dataset.retries || '0', 10);
-              if (retries < 2) {
-                el.dataset.retries = String(retries + 1);
-                setTimeout(() => {
-                  el.src = `/api/acervo/cover/${comic.id}?retry=${retries + 1}`;
-                }, 1500);
-              } else if (!el.dataset.failed) {
+              if (!el.dataset.failed) {
                 el.dataset.failed = 'true';
                 el.src = `/api/acervo/cover-art/${comic.id}`;
               }

@@ -438,6 +438,13 @@ export const BookshelfScreen: React.FC<BookshelfScreenProps> = ({
                 <img
                   src={comic.coverUrl}
                   alt={comic.title}
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    if (!el.dataset.failed) {
+                      el.dataset.failed = 'true';
+                      el.src = `/api/acervo/cover-art/${comic.id}`;
+                    }
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                 />
               </div>

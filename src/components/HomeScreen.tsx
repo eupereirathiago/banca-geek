@@ -267,12 +267,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 alt={heroIssue.title}
                 onError={(e: any) => {
                   const el = e.currentTarget;
-                  const retries = parseInt(el.dataset.retries || '0', 10);
-                  if (retries < 2) {
-                    el.dataset.retries = String(retries + 1);
-                    setTimeout(() => {
-                      el.src = `/api/acervo/cover/${heroIssue.id}?retry=${retries + 1}`;
-                    }, 1500);
+                  if (!el.dataset.failed) {
+                    el.dataset.failed = 'true';
+                    el.src = `/api/acervo/cover-art/${heroIssue.id}`;
                   }
                 }}
                 className="h-full w-full object-cover object-top filter brightness-80 contrast-110 group-hover:scale-102 transition-transform duration-500"

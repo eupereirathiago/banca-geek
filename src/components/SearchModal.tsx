@@ -157,6 +157,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     <img
                       src={comic.coverUrl}
                       alt={comic.title}
+                      onError={(e) => {
+                        const el = e.currentTarget;
+                        if (!el.dataset.failed) {
+                          el.dataset.failed = 'true';
+                          el.src = `/api/acervo/cover-art/${comic.id}`;
+                        }
+                      }}
                       className="w-12 aspect-[2/3] object-cover rounded-[2px]"
                     />
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
