@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ComicIssue } from '../types/comic';
 import { BookOpen } from 'lucide-react';
+import { ClientComicCover } from './ClientComicCover';
 
 interface ComicCardProps {
   comic: ComicIssue;
@@ -19,6 +20,7 @@ export const ComicCard: React.FC<ComicCardProps> = ({
   aspect = '2/3',
   size = 'md',
 }) => {
+  const [hasError, setHasError] = useState(false);
   const widthClasses = {
     sm: 'w-32 min-w-[128px]',
     md: 'w-40 min-w-[160px]',
@@ -36,19 +38,17 @@ export const ComicCard: React.FC<ComicCardProps> = ({
       <div
         className={`relative w-full ${aspectClass} overflow-hidden rounded-[4px] bg-[#1a1a2e] border border-[#8a8ca5]/20 group-hover:border-[#ffc531] transition-all duration-200 shadow-lg`}
       >
-        <img
-          src={comic.coverUrl}
-          alt={comic.title}
-          onError={(e) => {
-            const el = e.currentTarget;
-            if (!el.dataset.failed) {
-              el.dataset.failed = 'true';
-              el.src = `/api/acervo/cover-art/${comic.id}`;
-            }
-          }}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-        />
+        {!hasError ? (
+          <img
+            src={comic.coverUrl}
+            alt={comic.title}
+            onError={() => setHasError(true)}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <ClientComicCover comic={comic} />
+        )}
 
         {/* Top-left Badge */}
         {comic.badge && (

@@ -27,6 +27,7 @@ import {
 import { USER_PROFILE } from '../data/comics';
 import { saveComicProgress, getComicProgress } from '../services/progressService';
 import { getAccessToken } from '../services/authService';
+import { ClientComicCover } from './ClientComicCover';
 
 interface ActiveReaderScreenProps {
   comic: ComicIssue;
@@ -69,6 +70,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
   const [paperFilter, setPaperFilter] = useState<'normal' | 'sepia' | 'high-contrast'>('normal');
   const [showWatermarks, setShowWatermarks] = useState<boolean>(true);
   const [tokenParam, setTokenParam] = useState<string>('');
+  const [pageError, setPageError] = useState<boolean>(false);
 
   useEffect(() => {
     getAccessToken()
@@ -135,6 +137,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
   // Pre-load next and previous pages for instantaneous page flipping
   useEffect(() => {
     setImageLoaded(false);
+    setPageError(false);
     if (currentPage < totalPages) {
       const nextImg = new Image();
       nextImg.src = `/api/acervo/page-media/${comic.id}/${currentPage + 1}${tokenParam}`;
@@ -591,28 +594,46 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                   </div>
                 )}
 
-                <img
-                  src={currentMediaUrl}
-                  alt={`${comic.title} Página ${currentPage}`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    if (!el.dataset.failed) {
-                      el.dataset.failed = 'true';
-                      el.src = comic.coverUrl || `/api/acervo/cover-art/${comic.id}`;
-                    }
-                    setImageLoaded(true);
-                  }}
-                  className={`bg-black select-none transition-all ${
-                    fitMode === 'width'
-                      ? 'w-full h-auto object-contain max-w-none'
-                      : fitMode === 'height'
-                      ? 'h-full w-auto object-contain max-h-screen'
-                      : isFullscreen
-                      ? 'w-full h-full max-h-screen max-w-screen object-contain object-center'
-                      : 'w-full h-full object-contain object-center'
-                  }`}
-                />
+                {!pageError ? (
+                  <img
+                    src={currentMediaUrl}
+                    alt={`${comic.title} Página ${currentPage}`}
+                    onLoad={() => setImageLoaded(true)}
+                    onError={() => {
+                      setImageLoaded(true);
+                      setPageError(true);
+                    }}
+                    className={`bg-black select-none transition-all ${
+                      fitMode === 'width'
+                        ? 'w-full h-auto object-contain max-w-none'
+                        : fitMode === 'height'
+                        ? 'h-full w-auto object-contain max-h-screen'
+                        : isFullscreen
+                        ? 'w-full h-full max-h-screen max-w-screen object-contain object-center'
+                        : 'w-full h-full object-contain object-center'
+                    }`}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-[#12121f] text-center select-none">
+                    <div className="w-44 aspect-[2/3] mb-4 shadow-2xl rounded-[4px] overflow-hidden border border-[#ffc531]/40">
+                      <ClientComicCover comic={comic} />
+                    </div>
+                    <p className="text-xs text-[#8a8ca5] max-w-xs mb-3">
+                      Página {currentPage} de {totalPages} • Edição Preservada no Google Drive
+                    </p>
+                    {comic.drivePreviewUrl && (
+                      <a
+                        href={comic.drivePreviewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#16e1ff] hover:bg-[#00c8e6] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold shadow-lg transition-transform hover:scale-105"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        <span>LER NO VISUALIZADOR OFICIAL DO DRIVE</span>
+                      </a>
+                    )}
+                  </div>
+                )}
 
                 {/* Overlaid security watermark */}
                 {showWatermarks && (

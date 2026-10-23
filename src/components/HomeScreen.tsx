@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ComicIssue, Saga, CharacterHighlight } from '../types/comic';
 import { ComicCard } from './ComicCard';
+import { ClientComicCover } from './ClientComicCover';
 import {
   BookOpen,
   Bookmark,
@@ -44,6 +45,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [viewMode, setViewMode] = useState<'sections' | 'grid'>('sections');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [visibleLimit, setVisibleLimit] = useState<number>(48);
+  const [heroImageError, setHeroImageError] = useState<boolean>(false);
 
   // Featured hero issue
   const heroIssue = useMemo(() => {
@@ -262,21 +264,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           >
             {/* Background cover art with gradient overlay */}
             <div className="relative h-80 sm:h-96 w-full overflow-hidden">
-              <img
-                src={heroIssue.coverUrl}
-                alt={heroIssue.title}
-                onError={(e: any) => {
-                  const el = e.currentTarget;
-                  if (!el.dataset.failed) {
-                    el.dataset.failed = 'true';
-                    el.src = `/api/acervo/cover-art/${heroIssue.id}`;
-                  }
-                }}
-                className="h-full w-full object-cover object-top filter brightness-80 contrast-110 group-hover:scale-102 transition-transform duration-500"
-              />
+              {!heroImageError ? (
+                <img
+                  src={heroIssue.coverUrl}
+                  alt={heroIssue.title}
+                  onError={() => setHeroImageError(true)}
+                  className="h-full w-full object-cover object-top filter brightness-80 contrast-110 group-hover:scale-102 transition-transform duration-500"
+                />
+              ) : (
+                <ClientComicCover comic={heroIssue} size="hero" />
+              )}
               {/* Scrim */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#12121f] via-[#12121f]/75 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#12121f]/90 via-[#12121f]/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#12121f] via-[#12121f]/75 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#12121f]/90 via-[#12121f]/50 to-transparent pointer-events-none" />
 
               {/* Content overlay */}
               <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6 z-10">

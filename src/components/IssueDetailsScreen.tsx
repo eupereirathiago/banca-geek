@@ -21,6 +21,7 @@ import {
   Edit3,
   ExternalLink,
 } from 'lucide-react';
+import { ClientComicCover } from './ClientComicCover';
 import {
   requestAiSynopsis,
   getCachedAiSynopsis,
@@ -51,6 +52,7 @@ export const IssueDetailsScreen: React.FC<IssueDetailsScreenProps> = ({
   onToggleOffline,
 }) => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [coverError, setCoverError] = useState<boolean>(false);
 
   // Persistent AI Synopsis State
   const [aiData, setAiData] = useState<AiSynopsisData | null>(() => getCachedAiSynopsis(comic.id));
@@ -193,18 +195,16 @@ export const IssueDetailsScreen: React.FC<IssueDetailsScreenProps> = ({
       {/* Central Cover Showcase */}
       <div className="flex flex-col items-center mb-6">
         <div className="relative w-56 sm:w-64 aspect-[2/3] rounded-[4px] overflow-hidden border-2 border-[#8a8ca5]/30 shadow-2xl bg-[#1a1a2e]">
-          <img
-            src={comic.coverUrl}
-            alt={comic.title}
-            onError={(e: any) => {
-              const el = e.currentTarget;
-              if (!el.dataset.failed) {
-                el.dataset.failed = 'true';
-                el.src = `/api/acervo/cover-art/${comic.id}`;
-              }
-            }}
-            className="w-full h-full object-cover"
-          />
+          {!coverError ? (
+            <img
+              src={comic.coverUrl}
+              alt={comic.title}
+              onError={() => setCoverError(true)}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <ClientComicCover comic={comic} />
+          )}
 
           {/* Rarity Tag at top-left */}
           <div className="absolute top-2 left-2 z-10">
