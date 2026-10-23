@@ -33,7 +33,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() &&
-        request.auth.token.email == "ThiagoPereira409@gmail.com" &&
+        (request.auth.token.email.lower() == "thiagopereira409@gmail.com") &&
         request.auth.token.email_verified == true;
     }
 
@@ -41,16 +41,21 @@ service cloud.firestore {
     // VALIDATION BLUEPRINTS
     // ----------------------------------------------------
     function isValidUserProfile(data) {
-      return data.keys().hasAll(['userId', 'name', 'readBadge', 'readingMilestone', 'avatarUrl', 'createdAt']) &&
-             data.keys().hasOnly(['userId', 'name', 'readBadge', 'readingMilestone', 'avatarUrl', 'readIssuesCount', 'nextMilestoneCount', 'nextBadgeName', 'completedSagasCount', 'favoritePublisher', 'bio', 'createdAt', 'updatedAt']) &&
+      return data.keys().hasAll(['userId', 'name']) &&
              data.userId is string && isValidId(data.userId) &&
              data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
-             data.readBadge is string && data.readBadge.size() <= 150 &&
-             data.readingMilestone is string && data.readingMilestone.size() <= 100 &&
-             data.avatarUrl is string && data.avatarUrl.size() <= 150000 &&
-             data.createdAt is string && data.createdAt.size() <= 50 &&
+             (!('readBadge' in data) || (data.readBadge is string && data.readBadge.size() <= 150)) &&
+             (!('readingMilestone' in data) || (data.readingMilestone is string && data.readingMilestone.size() <= 100)) &&
+             (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 150000)) &&
+             (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50)) &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 200)) &&
              (!('bio' in data) || (data.bio is string && data.bio.size() <= 500)) &&
-             (!('favoritePublisher' in data) || (data.favoritePublisher is string && data.favoritePublisher.size() <= 100));
+             (!('favoritePublisher' in data) || (data.favoritePublisher is string && data.favoritePublisher.size() <= 100)) &&
+             (!('readIssuesCount' in data) || data.readIssuesCount is number) &&
+             (!('nextMilestoneCount' in data) || data.nextMilestoneCount is number) &&
+             (!('nextBadgeName' in data) || (data.nextBadgeName is string && data.nextBadgeName.size() <= 150)) &&
+             (!('completedSagasCount' in data) || data.completedSagasCount is number);
     }
 
     function isValidReadingProgress(data) {
@@ -153,12 +158,7 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidId(userId) &&
                        isValidUserProfile(incoming()) && incoming().userId == userId;
       allow update: if isOwner(userId) && isValidUserProfile(incoming()) &&
-                       incoming().userId == existing().userId &&
-                       incoming().diff(existing()).affectedKeys().hasOnly([
-                         'name', 'readBadge', 'readingMilestone', 'avatarUrl',
-                         'readIssuesCount', 'nextMilestoneCount', 'nextBadgeName',
-                         'completedSagasCount', 'favoritePublisher', 'bio', 'updatedAt'
-                       ]);
+                       incoming().userId == existing().userId;
       allow delete: if isOwner(userId) || isAdmin();
 
       // Reading Progress

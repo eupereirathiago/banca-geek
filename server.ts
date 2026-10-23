@@ -10,10 +10,12 @@ import AdmZip from 'adm-zip';
 import { execSync } from 'child_process';
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { createExtractorFromData } from 'node-unrar-js';
-import initialRepoEditions from './src/data/repoEditions.json';
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const initialRepoEditions = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, 'src/data/repoEditions.json'), 'utf8')
+);
 
 const app = express();
 // AI Studio dev server runs on port 3000 (nginx reverse-proxy runs on 8080)

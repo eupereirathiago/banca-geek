@@ -16,10 +16,11 @@
         "completedSagasCount": { "type": "integer" },
         "favoritePublisher": { "type": "string", "maxLength": 100 },
         "bio": { "type": "string", "maxLength": 500 },
+        "email": { "type": "string", "maxLength": 200 },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "name", "readBadge", "readingMilestone", "avatarUrl", "createdAt"]
+      "required": ["userId", "name"]
     },
     "ReadingProgress": {
       "title": "ReadingProgress",

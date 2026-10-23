@@ -541,7 +541,16 @@ export async function pushCloudReview(review: ComicReview): Promise<void> {
  */
 export async function pushCloudProfile(profile: any): Promise<void> {
   const user = auth.currentUser;
-  const uid = user ? user.uid : (profile.name ? 'u_' + encodeURIComponent(profile.name.toLowerCase().trim().replace(/[^a-z0-9]/g, '_')) : 'default_reader');
+  if (!user) {
+    fetch('/api/db/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profile),
+    }).catch(() => {});
+    return;
+  }
+
+  const uid = user.uid;
   const targetPath = `users/${uid}`;
 
   try {
