@@ -67,7 +67,7 @@ export const AcervoSyncModal: React.FC<AcervoSyncModalProps> = ({
     const unsubscribe = initAuth(
       (user, token) => {
         setCuratorUser(user);
-        setAuthToken(token);
+        setAuthToken(token || null);
       },
       () => {
         setCuratorUser(null);
@@ -148,7 +148,7 @@ export const AcervoSyncModal: React.FC<AcervoSyncModalProps> = ({
       const res = await googleSignIn();
       if (res) {
         setCuratorUser(res.user);
-        setAuthToken(res.accessToken);
+        setAuthToken(res.accessToken || null);
         setSyncResult('Credenciais de curador autenticadas com sucesso!');
         await runDiagnosticTest();
         setTimeout(() => setSyncResult(null), 2500);

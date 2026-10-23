@@ -1370,9 +1370,8 @@ function renderComicCoverSvg(comicId: string): string {
     <text x="200" y="500" font-family="sans-serif" font-size="10" fill="#8a8ca5" text-anchor="middle">Digitalização Preservada em Alta Definição</text>
 
     <rect x="8" y="546" width="384" height="46" fill="#12121f"/>
-    <line x1="8" y1="546" x2="392" y2="546" stroke="#ffc531" stroke-width="1.5"/>
-    <text x="200" y="566" font-family="sans-serif" font-size="10" font-weight="900" fill="#ffc531" text-anchor="middle" letter-spacing="1.5">REPOSITÓRIO GOOGLE DRIVE AUTÊNTICO</text>
-    <text x="200" y="582" font-family="sans-serif" font-size="9" fill="#8a8ca5" text-anchor="middle">FORMATO ORIGINAL • LEITURA IMEDIATA</text>
+    <text x="200" y="566" font-family="sans-serif" font-size="10" font-weight="900" fill="#ffc531" text-anchor="middle" letter-spacing="1.5">ACERVO CENTRAL BANCA GEEK</text>
+    <text x="200" y="582" font-family="sans-serif" font-size="9" fill="#8a8ca5" text-anchor="middle">EDIÇÃO ORIGINAL • LEITURA NO APP</text>
   </svg>`;
 }
 

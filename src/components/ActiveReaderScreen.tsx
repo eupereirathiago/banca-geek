@@ -53,9 +53,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
 
   const [currentPage, setCurrentPage] = useState<number>(startPage);
   // Default to native internal reader canvas for all formats (.cbr, .cbz, .pdf, .epub, .cb7, .cbt)
-  const [readerEngine, setReaderEngine] = useState<'canvas' | 'drive'>(() => {
-    return 'drive';
-  });
+  const [readerEngine, setReaderEngine] = useState<'canvas'>('canvas');
   const [extractedPages, setExtractedPages] = useState<string[] | null>(() => getCachedComicBlobUrls(comic.id));
   const [viewMode, setViewMode] = useState<ViewMode>('single');
   const [zoomLevel, setZoomLevel] = useState<number>(1);
@@ -757,21 +755,6 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                 <Scroll className="w-3.5 h-3.5" />
                 VERTICAL
               </button>
-
-              {comic.drivePreviewUrl && (
-                <button
-                  onClick={() => setReaderEngine(readerEngine === 'drive' ? 'canvas' : 'drive')}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-[3px] text-xs font-anton tracking-wider uppercase transition-colors cursor-pointer ${
-                    readerEngine === 'drive'
-                      ? 'bg-[#16e1ff] text-[#12121f] font-bold shadow-xs'
-                      : 'text-[#ffc531] hover:text-[#f4ebd8]'
-                  }`}
-                  title="Alternar para Drive Viewer Oficial"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  DRIVE
-                </button>
-              )}
             </div>
           </div>
 

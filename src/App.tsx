@@ -171,6 +171,32 @@ export default function App() {
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
+        setIsProfileModalOpen(false);
+        setUserProfile((prev) => {
+          const profileName = (user.displayName || user.email?.split('@')[0] || prev?.name || 'LEITOR VIP').toUpperCase();
+          const profileAvatar = user.photoURL || prev?.avatarUrl || 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=250&q=80';
+          const updated: UserProfile = {
+            name: profileName,
+            avatarUrl: profileAvatar,
+            readBadge: prev?.readBadge || 'PRIMEIRA LEITURA • 1 EDIÇÃO',
+            readingMilestone: prev?.readingMilestone || 'Início da Coleção',
+            readIssuesCount: prev?.readIssuesCount || 0,
+            nextMilestoneCount: prev?.nextMilestoneCount || 10,
+            nextBadgeName: prev?.nextBadgeName || 'SELO KRYPTONITA (10 REVISTAS)',
+            completedSagasCount: prev?.completedSagasCount || 0,
+            cachedStorageGb: prev?.cachedStorageGb || 0,
+            maxCacheGb: prev?.maxCacheGb || 10,
+            offlineExpiryDays: prev?.offlineExpiryDays || 30,
+            favoritePublisher: prev?.favoritePublisher || 'Marvel',
+            bio: prev?.bio || `Conta Google: ${user.email}`,
+            createdAt: prev?.createdAt || new Date().toISOString(),
+          };
+          try {
+            localStorage.setItem('banca_geek_user_profile', JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
+
         initUserCloudSync(user.uid, (cloudState) => {
           setComics((prev) => mergeComicsWithSavedProgress(prev));
         });

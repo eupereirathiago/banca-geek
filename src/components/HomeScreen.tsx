@@ -239,8 +239,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-[#8a8ca5]">
-            <HardDrive className="w-3.5 h-3.5 text-[#16e1ff]" />
-            <span className="hidden sm:inline">Google Drive (109yWAVim...)</span>
+            <span className="w-2 h-2 rounded-full bg-[#10b981]" />
+            <span className="hidden sm:inline font-mono">ACERVO CENTRAL PROTEGIDO</span>
           </div>
         </div>
 

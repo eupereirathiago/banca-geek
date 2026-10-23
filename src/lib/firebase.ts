@@ -35,9 +35,8 @@ try {
 
 export const db = firestoreInstance;
 
-// Setup Google Auth Provider
+// Setup Google Auth Provider (Standard public Google Login for all users)
 export const googleAuthProvider = new GoogleAuthProvider();
-googleAuthProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
 googleAuthProvider.setCustomParameters({
   prompt: 'select_account',
 });
