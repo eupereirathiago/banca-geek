@@ -328,20 +328,6 @@ export const IssueDetailsScreen: React.FC<IssueDetailsScreenProps> = ({
         </button>
       </div>
 
-      {comic.drivePreviewUrl && (
-        <div className="mb-4">
-          <a
-            href={comic.drivePreviewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 py-3 bg-[#16e1ff]/10 hover:bg-[#16e1ff]/20 border border-[#16e1ff] text-[#16e1ff] rounded-[4px] font-anton text-xs uppercase tracking-wider transition-all shadow-md group"
-          >
-            <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            <span>LER DIRETO NO GOOGLE DRIVE OFICIAL</span>
-          </a>
-        </div>
-      )}
-
       {/* Clean Edition Metadata Card */}
       <div className="bg-[#12121f] rounded-[4px] border border-[#8a8ca5]/15 p-3 mb-6 text-xs flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[#8a8ca5] min-w-0">

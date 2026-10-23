@@ -311,39 +311,12 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
             </div>
           </div>
 
-          {/* Engine Switcher (Drive Reader vs Native Canvas) */}
+          {/* Central Title & Active Format Tag */}
           <div className="flex items-center gap-2">
-            {comic.drivePreviewUrl && (
-              <div className="flex items-center bg-[#1a1a2e] rounded-[4px] p-0.5 border border-[#8a8ca5]/20 text-[10px] font-anton uppercase">
-                <button
-                  type="button"
-                  onClick={() => setReaderEngine('drive')}
-                  className={`px-2 py-1 rounded-[2px] transition-all flex items-center gap-1 cursor-pointer ${
-                    readerEngine === 'drive'
-                      ? 'bg-[#16e1ff] text-[#12121f] font-bold shadow-xs'
-                      : 'text-[#8a8ca5] hover:text-[#f4ebd8]'
-                  }`}
-                  title="Visualizador oficial do Google Drive com todas as páginas"
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>MODO DRIVE</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReaderEngine('canvas')}
-                  className={`px-2 py-1 rounded-[2px] transition-all flex items-center gap-1 cursor-pointer ${
-                    readerEngine === 'canvas'
-                      ? 'bg-[#ffc531] text-[#12121f] font-bold shadow-xs'
-                      : 'text-[#8a8ca5] hover:text-[#f4ebd8]'
-                  }`}
-                  title="Leitor nativo página a página"
-                >
-                  <Scroll className="w-3.5 h-3.5" />
-                  <span>NATIVO</span>
-                </button>
-              </div>
-            )}
-            <span className="px-2 py-0.5 bg-[#d62839] text-[#f4ebd8] rounded-[2px] font-anton text-[10px] tracking-wider uppercase font-bold shadow-xs hidden sm:inline">
+            <span className="font-anton text-sm tracking-wider uppercase text-[#f4ebd8] hidden sm:inline">
+              LEITOR OFICIAL BANCA GEEK
+            </span>
+            <span className="px-2 py-0.5 bg-[#d62839] text-[#f4ebd8] rounded-[2px] font-anton text-[10px] tracking-wider uppercase font-bold shadow-xs">
               .{formatLabel}
             </span>
           </div>
@@ -544,52 +517,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
           </div>
         )}
 
-        {readerEngine === 'drive' ? (
-          /* Official Google Drive Full Edition Viewer with All Pages */
-          <div
-            className={`flex flex-col bg-[#12121f] overflow-hidden ${
-              isFullscreen
-                ? 'w-full h-full rounded-none border-0'
-                : 'w-full max-w-5xl h-[84vh] rounded-[4px] border-2 border-[#ffc531]/40 shadow-2xl'
-            }`}
-          >
-            <div className="bg-[#1a1a2e] px-4 py-2 border-b border-[#8a8ca5]/20 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[#16e1ff]" />
-                <span className="font-anton text-xs text-[#16e1ff] uppercase tracking-wide">
-                  VISUALIZADOR OFICIAL GOOGLE DRIVE • TODAS AS PÁGINAS DA HQ
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {comic.drivePreviewUrl && (
-                  <a
-                    href={comic.drivePreviewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-2.5 py-1 bg-[#12121f] hover:bg-[#22223b] border border-[#16e1ff]/50 text-[#16e1ff] rounded-[3px] text-xs font-anton uppercase flex items-center gap-1 transition-colors"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Abrir em Nova Aba</span>
-                  </a>
-                )}
-                <button
-                  onClick={() => setReaderEngine('canvas')}
-                  className="px-2.5 py-1 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] rounded-[3px] text-xs font-anton uppercase font-bold cursor-pointer transition-colors"
-                >
-                  Modo Leitor Nativo
-                </button>
-              </div>
-            </div>
-            <div className="flex-1 w-full h-full relative bg-black">
-              <iframe
-                src={comic.drivePreviewUrl || `https://drive.google.com/file/d/${comic.driveFileId}/preview`}
-                className="w-full h-full border-0"
-                allow="autoplay; fullscreen"
-                title={comic.title}
-              />
-            </div>
-          </div>
-        ) : viewMode === 'vertical' ? (
+        {viewMode === 'vertical' ? (
           /* Vertical Continuous Scroll Webtoon Mode */
           <div
             className={`flex flex-col items-center gap-3 py-4 ${
@@ -682,19 +610,18 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                       <ClientComicCover comic={comic} />
                     </div>
                     <p className="text-xs text-[#8a8ca5] max-w-xs mb-3">
-                      Página {currentPage} de {totalPages} • Edição Preservada no Google Drive
+                      Página {currentPage} de {totalPages} • Acervo Local Banca Geek
                     </p>
-                    {comic.drivePreviewUrl && (
-                      <a
-                        href={comic.drivePreviewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#16e1ff] hover:bg-[#00c8e6] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold shadow-lg transition-transform hover:scale-105"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        <span>LER NO VISUALIZADOR OFICIAL DO DRIVE</span>
-                      </a>
-                    )}
+                    <button
+                      onClick={() => {
+                        setImageLoaded(false);
+                        setPageError(false);
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold shadow-lg transition-transform hover:scale-105 cursor-pointer"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      <span>RECARREGAR PÁGINA</span>
+                    </button>
                   </div>
                 )}
 
@@ -1038,20 +965,6 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                 {isFullscreen ? 'ATIVO' : 'ATIVAR'}
               </button>
             </div>
-
-            {comic.drivePreviewUrl && (
-              <div className="mb-4 pt-2 border-t border-[#8a8ca5]/15">
-                <a
-                  href={comic.drivePreviewUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2 px-3 bg-[#12121f] hover:bg-[#22223b] border border-[#ffc531]/50 text-[#ffc531] rounded-[3px] text-xs font-anton tracking-wider uppercase flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>VISUALIZADOR GOOGLE DRIVE</span>
-                </a>
-              </div>
-            )}
 
             <button
               onClick={() => setShowSettingsModal(false)}

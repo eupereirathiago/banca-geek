@@ -1377,34 +1377,54 @@ function renderComicCoverSvg(comicId: string): string {
 }
 
 // 3. Cover Media Proxy: Delivers instant high-res vector art or cached disk cover
-app.get('/api/acervo/cover/:comicId', (req, res) => {
+app.get('/api/acervo/cover/:comicId', async (req, res) => {
   const { comicId } = req.params;
-  const persistentCoverPath = path.join(COVERS_DATA_DIR, `${comicId}.img`);
+  const comic = cachedAcervo.find((c) => c.id === comicId);
+  const mapping = vaultStorageMapping.get(comicId);
+  const driveFileId = mapping?.coverDriveFileId || mapping?.zipDriveFileId || (comic as any)?.driveFileId;
 
-  // 1. If on disk and valid, send immediately
-  if (fs.existsSync(persistentCoverPath) && fs.statSync(persistentCoverPath).size > 50) {
-    try {
-      const buf = fs.readFileSync(persistentCoverPath);
-      res.setHeader('Content-Type', 'image/jpeg');
-      res.setHeader('Cache-Control', 'public, max-age=86400');
-      return res.send(buf);
-    } catch {}
+  // 1. Check all possible disk paths (both /tmp and data/covers)
+  const candidateCoverPaths = [
+    path.join(COVERS_DATA_DIR, `${comicId}.jpg`),
+    path.join(COVERS_DATA_DIR, `${comicId}.png`),
+    path.join(COVERS_DATA_DIR, `${comicId}.img`),
+    path.join(process.cwd(), 'data/covers', `${comicId}.jpg`),
+    path.join(process.cwd(), 'data/covers', `${comicId}.png`),
+    path.join(process.cwd(), 'data/covers', `${comicId}.img`),
+  ];
+
+  for (const cp of candidateCoverPaths) {
+    if (fs.existsSync(cp) && fs.statSync(cp).size > 500) {
+      try {
+        const buf = fs.readFileSync(cp);
+        const isPng = buf[0] === 0x89 && buf[1] === 0x50;
+        const isWebp = buf[8] === 0x57 && buf[9] === 0x45;
+        res.setHeader('Content-Type', isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.send(buf);
+      } catch {}
+    }
   }
 
-  // 2. If stored in serverDatabase
-  const dbCover = serverDatabase.covers?.[comicId];
-  if (dbCover?.coverDataUrl) {
+  // 2. If it is a PDF with public CDN thumbnail, stream it directly
+  if (driveFileId && ((comic as any)?.isPdf || (comic as any)?.format === 'pdf')) {
+    const cdnUrl = `https://lh3.googleusercontent.com/d/${driveFileId}=w600`;
     try {
-      const match = dbCover.coverDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-      if (match) {
-        res.setHeader('Content-Type', match[1] || 'image/jpeg');
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        return res.send(Buffer.from(match[2], 'base64'));
+      const resp = await fetch(cdnUrl);
+      if (resp.ok && resp.headers.get('content-type')?.includes('image')) {
+        const buf = Buffer.from(await resp.arrayBuffer());
+        if (buf.length > 500) {
+          const savePath = path.join(COVERS_DATA_DIR, `${comicId}.jpg`);
+          try { fs.writeFileSync(savePath, buf); } catch {}
+          res.setHeader('Content-Type', resp.headers.get('content-type') || 'image/png');
+          res.setHeader('Cache-Control', 'public, max-age=86400');
+          return res.send(buf);
+        }
       }
     } catch {}
   }
 
-  // 3. Instant high-res SVG comic cover: 0ms latency, zero timeouts, 100% reliable on Vercel
+  // 3. Instant high-res SVG comic cover fallback
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'public, max-age=86400');
   res.send(renderComicCoverSvg(comicId));
