@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { USER_PROFILE } from '../data/comics';
 import { saveComicProgress, getComicProgress } from '../services/progressService';
+import { getAccessToken } from '../services/authService';
 
 interface ActiveReaderScreenProps {
   comic: ComicIssue;
@@ -67,6 +68,15 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
   const [brightness, setBrightness] = useState<number>(100);
   const [paperFilter, setPaperFilter] = useState<'normal' | 'sepia' | 'high-contrast'>('normal');
   const [showWatermarks, setShowWatermarks] = useState<boolean>(true);
+  const [tokenParam, setTokenParam] = useState<string>('');
+
+  useEffect(() => {
+    getAccessToken()
+      .then((t) => {
+        if (t) setTokenParam(`?token=${encodeURIComponent(t)}`);
+      })
+      .catch(() => {});
+  }, []);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const readerStageRef = useRef<HTMLDivElement>(null);
@@ -127,13 +137,13 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
     setImageLoaded(false);
     if (currentPage < totalPages) {
       const nextImg = new Image();
-      nextImg.src = `/api/acervo/page-media/${comic.id}/${currentPage + 1}`;
+      nextImg.src = `/api/acervo/page-media/${comic.id}/${currentPage + 1}${tokenParam}`;
     }
     if (currentPage > 1) {
       const prevImg = new Image();
-      prevImg.src = `/api/acervo/page-media/${comic.id}/${currentPage - 1}`;
+      prevImg.src = `/api/acervo/page-media/${comic.id}/${currentPage - 1}${tokenParam}`;
     }
-  }, [currentPage, totalPages, comic.id]);
+  }, [currentPage, totalPages, comic.id, tokenParam]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -238,8 +248,8 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
     return { filter: filterString };
   };
 
-  const currentMediaUrl = `/api/acervo/page-media/${comic.id}/${currentPage}`;
-  const nextMediaUrl = `/api/acervo/page-media/${comic.id}/${currentPage + 1}`;
+  const currentMediaUrl = `/api/acervo/page-media/${comic.id}/${currentPage}${tokenParam}`;
+  const nextMediaUrl = `/api/acervo/page-media/${comic.id}/${currentPage + 1}${tokenParam}`;
 
   return (
     <div
@@ -944,6 +954,20 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                 {isFullscreen ? 'ATIVO' : 'ATIVAR'}
               </button>
             </div>
+
+            {comic.drivePreviewUrl && (
+              <div className="mb-4 pt-2 border-t border-[#8a8ca5]/15">
+                <a
+                  href={comic.drivePreviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2 px-3 bg-[#12121f] hover:bg-[#22223b] border border-[#ffc531]/50 text-[#ffc531] rounded-[3px] text-xs font-anton tracking-wider uppercase flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>VISUALIZADOR GOOGLE DRIVE</span>
+                </a>
+              </div>
+            )}
 
             <button
               onClick={() => setShowSettingsModal(false)}

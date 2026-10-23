@@ -494,7 +494,12 @@ async function extractComicCoverAndPages(
  * Universal Multi-Format In-App Extractor
  * Supports: .cbr, .cbz, .pdf, .epub, .cb7, .cbt, .rar, .zip, .tar, .7z
  */
-async function getComicArchivePages(comicId: string, driveFileId?: string, format?: string): Promise<ComicExtractionResult | null> {
+async function getComicArchivePages(
+  comicId: string,
+  driveFileId?: string,
+  format?: string,
+  userToken?: string
+): Promise<ComicExtractionResult | null> {
   const cached = extractionMemoryCache.get(comicId);
   if (cached) return cached;
 
@@ -519,16 +524,47 @@ async function getComicArchivePages(comicId: string, driveFileId?: string, forma
 
   if (!fs.existsSync(archivePath) || fs.statSync(archivePath).size === 0) {
     if (!driveFileId) return null;
-    const downloadUrl = `https://drive.usercontent.google.com/download?id=${driveFileId}&export=download&confirm=t`;
-    try {
-      const resp = await fetch(downloadUrl);
-      if (!resp.ok) return null;
-      const arrayBuffer = await resp.arrayBuffer();
-      fs.writeFileSync(archivePath, Buffer.from(arrayBuffer));
-    } catch (err: any) {
-      console.warn(`[Archive Extractor] Erro ao baixar ${comicId}:`, err?.message || err);
-      return null;
+    let downloaded = false;
+
+    // 1. Google Drive API with Service Account or userToken
+    const drive = getDriveClient(userToken);
+    if (drive) {
+      try {
+        const driveRes: any = await drive.files.get(
+          { fileId: driveFileId, alt: 'media', supportsAllDrives: true },
+          { responseType: 'arraybuffer' }
+        );
+        if (driveRes?.data) {
+          fs.writeFileSync(archivePath, Buffer.from(driveRes.data));
+          downloaded = true;
+        }
+      } catch (err: any) {
+        console.warn(`[Archive Extractor] Drive API download falhou para ${comicId}:`, err?.message || err);
+      }
     }
+
+    // 2. Direct public download endpoints
+    if (!downloaded) {
+      const candidateUrls = [
+        `https://drive.usercontent.google.com/download?id=${driveFileId}&export=download&confirm=t`,
+        `https://docs.google.com/uc?export=download&id=${driveFileId}`,
+      ];
+      for (const url of candidateUrls) {
+        try {
+          const resp = await fetch(url);
+          if (resp.ok) {
+            const arrayBuffer = await resp.arrayBuffer();
+            if (arrayBuffer.byteLength > 500) {
+              fs.writeFileSync(archivePath, Buffer.from(arrayBuffer));
+              downloaded = true;
+              break;
+            }
+          }
+        } catch {}
+      }
+    }
+
+    if (!downloaded) return null;
   }
 
   const title = cachedAcervo.find((c) => c.id === comicId)?.title || comicId;
@@ -1103,7 +1139,12 @@ async function acquireCoverDownloadSlot(): Promise<() => void> {
  * Strictly extracts and returns the first page of ANY file (.cbr, .cbz, .pdf, .epub, .cb7, .cbt, .rar)
  * and permanently caches it to disk & serverDatabase.covers for ultra-fast instant delivery.
  */
-async function getComicCoverPage(comicId: string, driveFileId?: string, format?: string): Promise<string | null> {
+async function getComicCoverPage(
+  comicId: string,
+  driveFileId?: string,
+  format?: string,
+  userToken?: string
+): Promise<string | null> {
   const persistentCoverPath = path.join(COVERS_DATA_DIR, `${comicId}.img`);
   const cachedImagePath = path.join(COVER_CACHE_DIR, `${comicId}.img`);
 
@@ -1291,7 +1332,8 @@ app.get('/api/acervo/cover/:comicId', async (req, res) => {
   }
 
   // 2. Try to extract and retrieve the genuine first page cover
-  const coverFilePath = await getComicCoverPage(comicId, driveFileId, format);
+  const userToken = (req.query.token as string) || req.headers.authorization?.replace(/^Bearer\s+/i, '');
+  const coverFilePath = await getComicCoverPage(comicId, driveFileId, format, userToken);
   if (coverFilePath && fs.existsSync(coverFilePath)) {
     try {
       const buf = fs.readFileSync(coverFilePath);
@@ -1471,7 +1513,8 @@ app.get('/api/acervo/page-media/:comicId/:pageNumber', async (req, res) => {
   // 1. Universal Extractor for .cbr, .cbz, .pdf, .epub, .cb7, .cbt
   if (driveFileId || fs.existsSync(path.join(EXTRACTED_CACHE_DIR, comicId))) {
     try {
-      const archiveResult = await getComicArchivePages(comicId, driveFileId, format);
+      const userToken = (req.query.token as string) || req.headers.authorization?.replace(/^Bearer\s+/i, '');
+      const archiveResult = await getComicArchivePages(comicId, driveFileId, format, userToken);
       if (archiveResult && archiveResult.imageFiles.length > 0) {
         const pageIdxBounded = Math.max(0, Math.min(pageIdx - 1, archiveResult.imageFiles.length - 1));
         const imgPath = path.join(archiveResult.dir, archiveResult.imageFiles[pageIdxBounded]);

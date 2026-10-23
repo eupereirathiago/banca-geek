@@ -19,6 +19,7 @@ import {
   ChevronUp,
   RefreshCw,
   Edit3,
+  ExternalLink,
 } from 'lucide-react';
 import {
   requestAiSynopsis,
@@ -332,6 +333,20 @@ export const IssueDetailsScreen: React.FC<IssueDetailsScreenProps> = ({
           {comic.isInCollection ? 'Na Coleção' : 'Adicionar à Coleção'}
         </button>
       </div>
+
+      {comic.drivePreviewUrl && (
+        <div className="mb-4 text-center">
+          <a
+            href={comic.drivePreviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-[#12121f] hover:bg-[#22223b] border border-[#8a8ca5]/20 hover:border-[#16e1ff] text-xs text-[#16e1ff] font-semibold transition-all shadow-xs"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Visualizador Oficial Google Drive (Alternativo)</span>
+          </a>
+        </div>
+      )}
 
       {/* Clean Edition Metadata Card */}
       <div className="bg-[#12121f] rounded-[4px] border border-[#8a8ca5]/15 p-3 mb-6 text-xs flex items-center justify-between gap-2">
