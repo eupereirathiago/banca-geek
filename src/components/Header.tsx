@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Search, Bookmark, Share2, Cloud, RefreshCw, LogIn } from 'lucide-react';
+import { ArrowLeft, Search, Bookmark, Share2, Cloud, RefreshCw, LogIn, Download } from 'lucide-react';
 import { UserProfile } from '../types/comic';
 import { subscribeToSyncStatus, CloudSyncStatus } from '../services/cloudSyncService';
 import { auth, googleSignIn } from '../services/authService';
@@ -18,6 +18,8 @@ interface HeaderProps {
   onShare?: () => void;
   onOpenProfile?: () => void;
   userProfile?: UserProfile | null;
+  onOpenInstall?: () => void;
+  isInstalled?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,6 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
   onShare,
   onOpenProfile,
   userProfile,
+  onOpenInstall,
+  isInstalled = false,
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
   const [cloudStatus, setCloudStatus] = useState<CloudSyncStatus>({
@@ -124,6 +128,18 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-[#ffc531]' : ''}`} />
+            </button>
+          )}
+
+          {/* Quick Install PWA button */}
+          {!isInstalled && onOpenInstall && (
+            <button
+              onClick={onOpenInstall}
+              title="Instalar App no seu aparelho"
+              className="flex items-center gap-1 px-2 py-1 bg-[#1a1a2e] hover:bg-[#ffc531] text-[#ffc531] hover:text-[#12121f] border border-[#ffc531]/40 rounded-[4px] text-[10px] font-anton tracking-wider uppercase transition-all cursor-pointer shrink-0 active:scale-95"
+            >
+              <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span className="hidden sm:inline">INSTALAR APP</span>
             </button>
           )}
 

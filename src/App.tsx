@@ -17,6 +17,8 @@ import { CacheManagerModal } from './components/CacheManagerModal';
 import { SearchModal } from './components/SearchModal';
 import { SagaDetailModal } from './components/SagaDetailModal';
 import { CreateProfileModal } from './components/CreateProfileModal';
+import { InstallAppModal } from './components/InstallAppModal';
+import { usePWAInstall } from './hooks/usePWAInstall';
 import { COMICS_DATABASE, SAGAS_DATABASE, CHARACTER_HIGHLIGHTS } from './data/comics';
 import { ComicIssue, Saga, UserProfile } from './types/comic';
 import { fetchAcervoComics, triggerPreloadCovers } from './services/acervoService';
@@ -107,6 +109,44 @@ export default function App() {
   const [isRestorationModalOpen, setIsRestorationModalOpen] = useState<boolean>(false);
   const [isCacheModalOpen, setIsCacheModalOpen] = useState<boolean>(false);
   const [isLocalFileModalOpen, setIsLocalFileModalOpen] = useState<boolean>(false);
+
+  // PWA Install State & Prompt upon entering the app
+  const { isInstalled, isIOS, triggerInstall } = usePWAInstall();
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    // 1. If running in standalone mode (already installed), never prompt
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+
+    if (isStandalone || isInstalled) return;
+
+    // 2. Do not prompt if dismissed in this session
+    const dismissed = sessionStorage.getItem('banca_geek_install_prompt_dismissed');
+    if (dismissed) return;
+
+    // 3. Ask user if they want to install upon entering the app with a smooth 1.5s delay
+    const timer = setTimeout(() => {
+      setIsInstallModalOpen(true);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [isInstalled]);
+
+  const handleInstallApp = async () => {
+    const outcome = await triggerInstall();
+    if (outcome === 'accepted') {
+      setIsInstallModalOpen(false);
+    }
+  };
+
+  const handleCloseInstallModal = () => {
+    setIsInstallModalOpen(false);
+    try {
+      sessionStorage.setItem('banca_geek_install_prompt_dismissed', 'true');
+    } catch {}
+  };
 
   // Silent automatic sync from Google Drive & backend: always up-to-date on entry, focus and recurring
   useEffect(() => {
@@ -373,6 +413,8 @@ export default function App() {
           setActiveView('main');
         }}
         userProfile={userProfile}
+        onOpenInstall={() => setIsInstallModalOpen(true)}
+        isInstalled={isInstalled}
       />
 
       {/* Main Screen Content */}
@@ -503,6 +545,14 @@ export default function App() {
           setComics((prev) => [newComic, ...prev.filter((c) => c.id !== newComic.id)]);
           handleOpenReader(newComic, 1);
         }}
+      />
+
+      {/* PWA Install Prompt Modal upon entering the app */}
+      <InstallAppModal
+        isOpen={isInstallModalOpen}
+        onClose={handleCloseInstallModal}
+        onInstall={handleInstallApp}
+        isIOS={isIOS}
       />
     </div>
   );
