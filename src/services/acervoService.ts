@@ -88,6 +88,49 @@ export const fetchSecurePageStream = async (comicId: string, pageNumber: number)
   }
 };
 
+/**
+ * Calls backend API to download, extract, and store covers into the database.
+ * Also initiates browser image pre-fetching so covers appear without delay.
+ */
+export const triggerPreloadCovers = async (comicIds?: string[]): Promise<Record<string, string>> => {
+  try {
+    const res = await fetch('/api/acervo/preload-covers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comicIds, limit: 50 }),
+    });
+    if (!res.ok) return {};
+    const data = await res.json();
+    const covers = data.covers || {};
+
+    // Pre-cache into browser memory
+    if (typeof window !== 'undefined') {
+      const urls = Object.values(covers) as string[];
+      for (const url of urls.slice(0, 30)) {
+        if (url) {
+          const img = new Image();
+          img.src = url;
+        }
+      }
+    }
+    return covers;
+  } catch (err) {
+    console.warn('Aviso ao disparar pré-carregamento de capas:', err);
+    return {};
+  }
+};
+
+export const fetchCoversMap = async (): Promise<Record<string, boolean>> => {
+  try {
+    const res = await fetch('/api/acervo/covers-map');
+    if (!res.ok) return {};
+    const data = await res.json();
+    return data.cachedMap || {};
+  } catch {
+    return {};
+  }
+};
+
 export interface DriveTestItem {
   id: string;
   name: string;

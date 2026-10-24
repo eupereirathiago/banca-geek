@@ -1377,21 +1377,31 @@ function renderComicCoverSvg(comicId: string): string {
   </svg>`;
 }
 
-// 3. Cover Media Proxy: Delivers instant high-res vector art or cached disk cover
-app.get('/api/acervo/cover/:comicId', async (req, res) => {
-  const { comicId } = req.params;
+// In-Memory Fast Cache for Instant Cover Delivery (0ms response)
+const coverBufferMemoryCache = new Map<string, { buf: Buffer; mime: string }>();
+
+/**
+ * Downloads and extracts the authentic Page 1 cover of a comic,
+ * persists it to disk in data/covers/ and saves to the server database.
+ */
+async function downloadAndExtractCover(comicId: string): Promise<{ buf: Buffer; mime: string } | null> {
+  // 1. Check in-memory cache first
+  const mem = coverBufferMemoryCache.get(comicId);
+  if (mem) return mem;
+
   const comic = cachedAcervo.find((c) => c.id === comicId);
   const mapping = vaultStorageMapping.get(comicId);
   const driveFileId = mapping?.coverDriveFileId || mapping?.zipDriveFileId || (comic as any)?.driveFileId;
+  if (!driveFileId) return null;
 
-  // 1. Check all possible disk paths (both /tmp and data/covers)
+  const persistentCoverPath = path.join(COVERS_DATA_DIR, `${comicId}.jpg`);
+
+  // 2. Check disk
   const candidateCoverPaths = [
-    path.join(COVERS_DATA_DIR, `${comicId}.jpg`),
+    persistentCoverPath,
     path.join(COVERS_DATA_DIR, `${comicId}.png`),
-    path.join(COVERS_DATA_DIR, `${comicId}.img`),
     path.join(process.cwd(), 'data/covers', `${comicId}.jpg`),
     path.join(process.cwd(), 'data/covers', `${comicId}.png`),
-    path.join(process.cwd(), 'data/covers', `${comicId}.img`),
   ];
 
   for (const cp of candidateCoverPaths) {
@@ -1400,32 +1410,266 @@ app.get('/api/acervo/cover/:comicId', async (req, res) => {
         const buf = fs.readFileSync(cp);
         const isPng = buf[0] === 0x89 && buf[1] === 0x50;
         const isWebp = buf[8] === 0x57 && buf[9] === 0x45;
-        res.setHeader('Content-Type', isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg');
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        return res.send(buf);
+        const mime = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg';
+        const entry = { buf, mime };
+        coverBufferMemoryCache.set(comicId, entry);
+
+        // Ensure database registration
+        if (!serverDatabase.covers[comicId]) {
+          serverDatabase.covers[comicId] = {
+            comicId,
+            mimeType: mime,
+            coverPath: cp,
+            extractedAt: new Date().toISOString(),
+            totalPages: (comic as any)?.totalPages || 32,
+            title: (comic as any)?.title || comicId,
+            format: (comic as any)?.format || 'cbr',
+          };
+          saveServerDatabase();
+        }
+        return entry;
       } catch {}
     }
   }
 
-  // 2. If it is a PDF with public CDN thumbnail, stream it directly
-  if (driveFileId && ((comic as any)?.isPdf || (comic as any)?.format === 'pdf')) {
+  const ext = ((comic as any)?.format || 'cbr').toLowerCase();
+  const isPdf = Boolean((comic as any)?.isPdf || ext === 'pdf');
+
+  // 3. If PDF, fetch directly from high-speed Google CDN
+  if (isPdf) {
     const cdnUrl = `https://lh3.googleusercontent.com/d/${driveFileId}=w600`;
     try {
       const resp = await fetch(cdnUrl);
       if (resp.ok && resp.headers.get('content-type')?.includes('image')) {
         const buf = Buffer.from(await resp.arrayBuffer());
         if (buf.length > 500) {
-          const savePath = path.join(COVERS_DATA_DIR, `${comicId}.jpg`);
-          try { fs.writeFileSync(savePath, buf); } catch {}
-          res.setHeader('Content-Type', resp.headers.get('content-type') || 'image/png');
-          res.setHeader('Cache-Control', 'public, max-age=86400');
-          return res.send(buf);
+          try { fs.writeFileSync(persistentCoverPath, buf); } catch {}
+          const mime = resp.headers.get('content-type') || 'image/jpeg';
+          const entry = { buf, mime };
+          coverBufferMemoryCache.set(comicId, entry);
+
+          serverDatabase.covers[comicId] = {
+            comicId,
+            mimeType: mime,
+            coverPath: persistentCoverPath,
+            extractedAt: new Date().toISOString(),
+            totalPages: (comic as any)?.totalPages || 32,
+            title: (comic as any)?.title || comicId,
+            format: 'pdf',
+          };
+          saveServerDatabase();
+          return entry;
         }
       }
-    } catch {}
+    } catch (err: any) {
+      console.warn(`[Cover Extractor] Erro ao baixar thumbnail CDN PDF ${comicId}:`, err?.message || err);
+    }
   }
 
-  // 3. Instant high-res SVG comic cover fallback
+  // 4. If CBZ / ZIP / CBR / RAR: download archive and extract Page 1
+  try {
+    const downloadUrls = [
+      `https://drive.usercontent.google.com/download?id=${driveFileId}&export=download&confirm=t`,
+      `https://docs.google.com/uc?export=download&id=${driveFileId}`,
+    ];
+
+    let fileBuf: Buffer | null = null;
+    for (const url of downloadUrls) {
+      try {
+        const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        if (res.ok) {
+          fileBuf = Buffer.from(await res.arrayBuffer());
+          if (fileBuf.length > 1000) break;
+        }
+      } catch {}
+    }
+
+    if (!fileBuf || fileBuf.length < 1000) return null;
+
+    let coverBuf: Buffer | null = null;
+    const isZip = fileBuf[0] === 0x50 && fileBuf[1] === 0x4b;
+    const isRar = fileBuf[0] === 0x52 && fileBuf[1] === 0x61 && fileBuf[2] === 0x72;
+
+    if (isZip || ext === 'cbz' || ext === 'zip' || ext === 'epub') {
+      try {
+        const zip = new AdmZip(fileBuf);
+        const entries = zip.getEntries();
+        const imgEntries = entries
+          .filter(
+            (e) =>
+              !e.isDirectory &&
+              /\.(jpe?g|png|webp)$/i.test(e.entryName) &&
+              !e.entryName.includes('__MACOSX') &&
+              !path.basename(e.entryName).startsWith('._')
+          )
+          .sort((a, b) =>
+            a.entryName.localeCompare(b.entryName, undefined, { numeric: true, sensitivity: 'base' })
+          );
+        if (imgEntries.length > 0) {
+          coverBuf = imgEntries[0].getData();
+        }
+      } catch (err: any) {
+        console.warn(`[Cover Extractor] Erro ao extrair ZIP para ${comicId}:`, err?.message || err);
+      }
+    } else if (isRar || ext === 'cbr' || ext === 'rar') {
+      try {
+        const arrayBuf = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.byteLength) as ArrayBuffer;
+        const extractor = await createExtractorFromData({ data: arrayBuf });
+        const list = extractor.getFileList();
+        const imgHeaders = [...list.fileHeaders]
+          .filter(
+            (h) =>
+              !h.flags.directory &&
+              /\.(jpe?g|png|webp)$/i.test(h.name) &&
+              !h.name.includes('__MACOSX') &&
+              !path.basename(h.name).startsWith('._')
+          )
+          .sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
+          );
+        if (imgHeaders.length > 0) {
+          const extracted = extractor.extract({ files: [imgHeaders[0].name] });
+          const files = [...extracted.files];
+          if (files[0]?.extraction) {
+            coverBuf = Buffer.from(files[0].extraction);
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[Cover Extractor] Erro ao extrair RAR para ${comicId}:`, err?.message || err);
+      }
+    }
+
+    if (coverBuf && coverBuf.length > 500) {
+      try { fs.writeFileSync(persistentCoverPath, coverBuf); } catch {}
+      const isPng = coverBuf[0] === 0x89 && coverBuf[1] === 0x50;
+      const isWebp = coverBuf[8] === 0x57 && coverBuf[9] === 0x45;
+      const mime = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg';
+      const entry = { buf: coverBuf, mime };
+      coverBufferMemoryCache.set(comicId, entry);
+
+      serverDatabase.covers[comicId] = {
+        comicId,
+        mimeType: mime,
+        coverPath: persistentCoverPath,
+        extractedAt: new Date().toISOString(),
+        totalPages: (comic as any)?.totalPages || 32,
+        title: (comic as any)?.title || comicId,
+        format: ext,
+      };
+      saveServerDatabase();
+      return entry;
+    }
+  } catch (err: any) {
+    console.warn(`[Cover Extractor] Falha geral ao extrair capa para ${comicId}:`, err?.message || err);
+  }
+
+  return null;
+}
+
+let isPreloadingCovers = false;
+async function preloadFeaturedCovers(limit: number = 50, specificIds?: string[]) {
+  if (isPreloadingCovers) return;
+  isPreloadingCovers = true;
+  try {
+    let targetComics = cachedAcervo;
+    if (specificIds && specificIds.length > 0) {
+      targetComics = cachedAcervo.filter((c) => specificIds.includes(c.id));
+    } else {
+      // Prioritize prominent carousels
+      const priority = cachedAcervo.filter(
+        (c) =>
+          c.title.toLowerCase().includes('thanos') ||
+          c.title.toLowerCase().includes('vingador') ||
+          c.title.toLowerCase().includes('marvel') ||
+          c.title.toLowerCase().includes('guardi') ||
+          c.title.toLowerCase().includes('campe') ||
+          c.title.toLowerCase().includes('defensor') ||
+          c.title.toLowerCase().includes('warlock')
+      );
+      const remaining = cachedAcervo.filter((c) => !priority.some((p) => p.id === c.id));
+      targetComics = [...priority, ...remaining].slice(0, limit);
+    }
+
+    console.log(`[Cover Preloader] Pré-carregando ${targetComics.length} capas em segundo plano...`);
+    let preloaded = 0;
+
+    for (let i = 0; i < targetComics.length; i += 4) {
+      const batch = targetComics.slice(i, i + 4);
+      await Promise.allSettled(
+        batch.map(async (c) => {
+          const res = await downloadAndExtractCover(c.id);
+          if (res) preloaded++;
+        })
+      );
+    }
+    console.log(`[Cover Preloader] Concluído! ${preloaded} capas processadas e salvas no banco de dados.`);
+  } catch (err: any) {
+    console.warn('[Cover Preloader] Erro ao pré-carregar capas:', err?.message || err);
+  } finally {
+    isPreloadingCovers = false;
+  }
+}
+
+// 3. API: Preload Covers On-Demand and Store in Database
+app.all('/api/acervo/preload-covers', async (req, res) => {
+  const specificIds = Array.isArray(req.body?.comicIds)
+    ? req.body.comicIds
+    : typeof req.query.ids === 'string'
+    ? req.query.ids.split(',')
+    : undefined;
+  const limit = Number(req.body?.limit || req.query.limit) || 40;
+
+  // Run preload in background without blocking response
+  preloadFeaturedCovers(limit, specificIds).catch(() => {});
+
+  const currentCovers: Record<string, string> = {};
+  for (const [id] of Object.entries(serverDatabase.covers)) {
+    currentCovers[id] = `/api/acervo/cover/${id}`;
+  }
+
+  res.json({
+    success: true,
+    message: 'Pré-carregamento de capas iniciado com sucesso.',
+    totalCoversInDb: Object.keys(serverDatabase.covers).length,
+    covers: currentCovers,
+  });
+});
+
+// API: Lightweight Map of cached covers in database
+app.get('/api/acervo/covers-map', (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=60');
+  const map: Record<string, boolean> = {};
+  for (const id of Object.keys(serverDatabase.covers)) {
+    map[id] = true;
+  }
+  try {
+    const diskFiles = fs.readdirSync(COVERS_DATA_DIR);
+    for (const f of diskFiles) {
+      const baseId = f.replace(/\.(jpg|png|webp|img)$/i, '');
+      map[baseId] = true;
+    }
+  } catch {}
+
+  res.json({
+    success: true,
+    totalCached: Object.keys(map).length,
+    cachedMap: map,
+  });
+});
+
+// 4. Cover Media Proxy: Delivers instant in-memory or disk cover, or extracts on the fly!
+app.get('/api/acervo/cover/:comicId', async (req, res) => {
+  const { comicId } = req.params;
+
+  // 1. Try to get cached cover or extract on the fly
+  const coverResult = await downloadAndExtractCover(comicId);
+  if (coverResult && coverResult.buf) {
+    res.setHeader('Content-Type', coverResult.mime);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(coverResult.buf);
+  }
+
+  // 2. Fallback to instant high-res vector art SVG
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'public, max-age=86400');
   res.send(renderComicCoverSvg(comicId));
@@ -2542,10 +2786,16 @@ async function startServer() {
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Banca Geek] Server running at http://0.0.0.0:${PORT}`);
-    // Trigger initial silent background sync on boot
+    // Trigger initial silent background sync & cover preloading on boot
     syncFromCloudVault()
-      .then((r) => console.log(`[Banca Geek Backend] Sincronização inicial em background: ${r.total} HQs no acervo.`))
-      .catch((err) => console.log('[Banca Geek Backend] Sincronização em background aguardando:', err?.message || err));
+      .then((r) => {
+        console.log(`[Banca Geek Backend] Sincronização inicial em background: ${r.total} HQs no acervo.`);
+        preloadFeaturedCovers(50).catch(() => {});
+      })
+      .catch((err) => {
+        console.log('[Banca Geek Backend] Sincronização em background aguardando:', err?.message || err);
+        preloadFeaturedCovers(50).catch(() => {});
+      });
   });
 
   // Scheduled silent recurring auto-sync every 3 minutes

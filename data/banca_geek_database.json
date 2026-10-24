@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "lastUpdated": "2026-10-23T18:18:43.419Z",
+  "lastUpdated": "2026-10-24T01:53:34.455Z",
   "readingProgress": {
     "vault-f-0001-1UCcogyj": {
       "comicId": "vault-f-0001-1UCcogyj",
@@ -135,6 +135,42 @@
       "totalPages": 22,
       "title": "Os Vingadores v1 087 A Historia de Um Rei 30MAR10 Aquiles Grego BR (1971)",
       "format": "pdf"
+    },
+    "vault-f-0019-1IjiBJkm": {
+      "comicId": "vault-f-0019-1IjiBJkm",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0019-1IjiBJkm.jpg",
+      "extractedAt": "2026-10-24T01:53:27.153Z",
+      "totalPages": 36,
+      "title": "18 • Dia dos Namorados • Vingadores Macabros",
+      "format": "cbr"
+    },
+    "vault-f-0025-1rZ0xPCw": {
+      "comicId": "vault-f-0025-1rZ0xPCw",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0025-1rZ0xPCw.jpg",
+      "extractedAt": "2026-10-24T01:53:30.269Z",
+      "totalPages": 36,
+      "title": "24 • A Penúltima Aventura da Fúria Feminina da Marvel",
+      "format": "cbr"
+    },
+    "vault-f-0021-1buMoryd": {
+      "comicId": "vault-f-0021-1buMoryd",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0021-1buMoryd.jpg",
+      "extractedAt": "2026-10-24T01:53:30.631Z",
+      "totalPages": 36,
+      "title": "20 • A Nova Ms Marvel",
+      "format": "cbr"
+    },
+    "vault-f-0030-1rzrpMr3": {
+      "comicId": "vault-f-0030-1rzrpMr3",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0030-1rzrpMr3.jpg",
+      "extractedAt": "2026-10-24T01:53:34.455Z",
+      "totalPages": 36,
+      "title": "Defensores 02 (Bloch)",
+      "format": "cbr"
     }
   },
   "settings": {

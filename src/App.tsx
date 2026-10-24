@@ -19,7 +19,7 @@ import { SagaDetailModal } from './components/SagaDetailModal';
 import { CreateProfileModal } from './components/CreateProfileModal';
 import { COMICS_DATABASE, SAGAS_DATABASE, CHARACTER_HIGHLIGHTS } from './data/comics';
 import { ComicIssue, Saga, UserProfile } from './types/comic';
-import { fetchAcervoComics } from './services/acervoService';
+import { fetchAcervoComics, triggerPreloadCovers } from './services/acervoService';
 import { getStoredProfile, clearStoredProfile } from './services/profileService';
 import { getAllReadingProgress, saveComicProgress } from './services/progressService';
 import {
@@ -142,6 +142,19 @@ export default function App() {
 
     // 1. Immediate sync on entry
     loadComicsSilently(true);
+
+    // 1b. Immediately trigger cover preloading so covers are saved to DB and arrive instantly
+    triggerPreloadCovers()
+      .then((covers) => {
+        const urls = Object.values(covers);
+        urls.slice(0, 25).forEach((url) => {
+          if (url) {
+            const img = new Image();
+            img.src = url;
+          }
+        });
+      })
+      .catch(() => {});
 
     // 2. Continuous background sync every 20 seconds
     const interval = setInterval(() => loadComicsSilently(false), 20000);
