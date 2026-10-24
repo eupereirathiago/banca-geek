@@ -240,8 +240,8 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
     if (!isFullscreen) {
       setIsFullscreen(true);
       setShowControls(false);
-      resetControlsTimeout();
-      triggerToast('Modo Imersivo Ativado: Header e Barra de Navegação Ocultos');
+      setControlsVisible(false);
+      triggerToast('Modo Imersivo: 100% da tela para leitura • Duplo toque ou ESC para sair');
     } else {
       if (document.fullscreenElement) {
         document.exitFullscreen?.().catch(() => {});
@@ -249,7 +249,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
       setIsFullscreen(false);
       setShowControls(true);
       setControlsVisible(true);
-      triggerToast('Modo Padrão Restaurado (Header e Barra Visíveis)');
+      triggerToast('Modo Padrão Restaurado');
     }
   };
 
@@ -279,9 +279,9 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
         isFullscreen ? 'fixed inset-0 z-50 overflow-hidden' : ''
       }`}
     >
-      {/* Toast Notification */}
-      {showToast && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1a1a2e] border border-[#ffc531] text-[#f4ebd8] px-4 py-2 rounded-[4px] shadow-2xl text-xs font-semibold flex items-center gap-2 animate-fade-in">
+      {/* Toast Notification (Hidden in Immersive Mode) */}
+      {showToast && !isFullscreen && (
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1a1a2e] border border-[#ffc531] text-[#f4ebd8] px-4 py-2 rounded-[4px] shadow-2xl text-xs font-semibold flex items-center gap-2 animate-fade-in pointer-events-none">
           <Check className="w-4 h-4 text-[#ffc531]" />
           {showToast}
         </div>
@@ -429,11 +429,13 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
       {/* 3. Main Reading Stage */}
       <div
         ref={readerStageRef}
-        onMouseMove={resetControlsTimeout}
-        onTouchStart={resetControlsTimeout}
-        className={`relative flex items-center justify-center ${
+        onMouseMove={!isFullscreen ? resetControlsTimeout : undefined}
+        onTouchStart={!isFullscreen ? resetControlsTimeout : undefined}
+        className={`relative flex items-center justify-center select-none ${
           isFullscreen
-            ? 'fixed inset-0 z-50 w-screen h-screen bg-black p-0 m-0 overflow-hidden'
+            ? `fixed inset-0 z-50 w-screen h-screen bg-black p-0 m-0 overflow-hidden ${
+                !controlsVisible ? 'cursor-none' : ''
+              }`
             : 'flex-1 overflow-auto p-2 sm:p-4 bg-black/90'
         }`}
         style={{
@@ -442,75 +444,16 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
           width: isFullscreen ? '100vw' : undefined,
         }}
       >
-        {/* Floating Top-Right Exit Button inside Fullscreen stage with auto-hide */}
-        {isFullscreen && (
-          <div
-            className={`absolute top-4 right-4 z-40 flex items-center gap-2 transition-all duration-300 ${
-              controlsVisible ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none -translate-y-2'
-            }`}
-          >
+        {/* Discreet Floating Exit Button - ONLY appears briefly upon deliberate center tap */}
+        {isFullscreen && controlsVisible && (
+          <div className="absolute top-4 right-4 z-40 animate-fade-in">
             <button
               onClick={toggleFullscreen}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#12121f]/90 hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] rounded-full border border-white/20 shadow-2xl backdrop-blur-md text-xs font-anton tracking-wider uppercase transition-all cursor-pointer"
-              title="Sair do Modo Imersivo (ESC ou toque)"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-black/80 hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] rounded-full border border-white/20 shadow-2xl backdrop-blur-md text-xs font-anton tracking-wider uppercase transition-all cursor-pointer"
+              title="Sair do Modo Imersivo (Duplo toque ou ESC)"
             >
-              <Minimize2 className="w-4 h-4" />
+              <Minimize2 className="w-3.5 h-3.5" />
               <span>Sair da Imersão (ESC)</span>
-            </button>
-          </div>
-        )}
-
-        {/* Floating Bottom Navigator inside Fullscreen stage with auto-hide */}
-        {isFullscreen && (
-          <div
-            className={`absolute bottom-5 left-1/2 -translate-x-1/2 z-40 bg-[#12121f]/90 hover:bg-[#12121f]/95 backdrop-blur-md border border-[#ffc531]/60 px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-3 text-xs select-none transition-all duration-300 ${
-              controlsVisible ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none translate-y-4'
-            }`}
-          >
-            <button
-              onClick={goToPrevPage}
-              disabled={currentPage <= 1}
-              className="p-1 text-[#f4ebd8] hover:text-[#ffc531] disabled:opacity-30 cursor-pointer"
-              title="Página Anterior (Seta Esquerda)"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            <span className="font-anton text-sm text-[#ffc531] tracking-wider px-1">
-              {currentPage} / {totalPages}
-            </span>
-
-            <button
-              onClick={goToNextPage}
-              disabled={currentPage >= totalPages}
-              className="p-1 text-[#f4ebd8] hover:text-[#ffc531] disabled:opacity-30 cursor-pointer"
-              title="Próxima Página (Seta Direita / Espaço)"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-
-            <span className="w-px h-4 bg-white/20" />
-
-            <button
-              onClick={() => {
-                const next = fitMode === 'contain' ? 'width' : fitMode === 'width' ? 'height' : 'contain';
-                setFitMode(next);
-                triggerToast(next === 'contain' ? 'Ajuste: Proporção Original' : next === 'width' ? 'Ajuste: Largura Total' : 'Ajuste: Altura Total');
-              }}
-              className="px-2 py-0.5 bg-[#1a1a2e] border border-[#8a8ca5]/30 rounded-[3px] text-[10px] font-anton text-[#16e1ff] hover:text-[#ffc531] cursor-pointer"
-              title="Ajuste de Imagem (Tela / Largura / Altura)"
-            >
-              {fitMode === 'contain' ? 'AJUSTE: TELA' : fitMode === 'width' ? 'AJUSTE: LARGURA' : 'AJUSTE: ALTURA'}
-            </button>
-
-            <span className="w-px h-4 bg-white/20" />
-
-            <button
-              onClick={toggleFullscreen}
-              className="p-1 text-[#f4ebd8] hover:text-[#d62839] cursor-pointer"
-              title="Sair do Modo Imersivo"
-            >
-              <Minimize2 className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -540,9 +483,11 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                     }
                   }}
                 />
-                <div className="p-1.5 bg-[#12121f] text-center text-[10px] text-[#8a8ca5] font-mono border-t border-[#8a8ca5]/10">
-                  Página {pg} de {totalPages}
-                </div>
+                {!isFullscreen && (
+                  <div className="p-1.5 bg-[#12121f] text-center text-[10px] text-[#8a8ca5] font-mono border-t border-[#8a8ca5]/10">
+                    Página {pg} de {totalPages}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -624,7 +569,8 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                 )}
 
                 {/* Overlaid security watermark */}
-                {showWatermarks && (
+                {/* Overlaid security watermark (Hidden in Immersive Mode) */}
+                {showWatermarks && !isFullscreen && (
                   <div className="absolute top-2 left-3 right-3 flex justify-between text-[9px] font-mono text-white/35 tracking-widest select-none pointer-events-none uppercase">
                     <span>BG-NATIVE-{formatLabel}</span>
                     <span>PÁG {currentPage}/{totalPages}</span>
@@ -637,23 +583,34 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                   className="absolute inset-y-0 left-0 w-2/5 cursor-w-resize z-20 group"
                   title="Página Anterior (Seta Esquerda)"
                 >
-                  <div className="h-full flex items-center justify-start pl-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="p-2.5 rounded-full bg-[#12121f]/90 text-[#ffc531] border border-[#ffc531] shadow-xl">
-                      <ChevronLeft className="w-6 h-6" />
+                  {!isFullscreen && (
+                    <div className="h-full flex items-center justify-start pl-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="p-2.5 rounded-full bg-[#12121f]/90 text-[#ffc531] border border-[#ffc531] shadow-xl">
+                        <ChevronLeft className="w-6 h-6" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <div
                   onClick={() => {
                     if (isFullscreen) {
-                      setControlsVisible((prev) => !prev);
+                      setControlsVisible((prev) => {
+                        const next = !prev;
+                        if (next) {
+                          if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+                          controlsTimeoutRef.current = setTimeout(() => {
+                            setControlsVisible(false);
+                          }, 2500);
+                        }
+                        return next;
+                      });
                     } else {
                       setShowControls((prev) => !prev);
                     }
                   }}
                   className="absolute inset-y-0 left-2/5 right-2/5 cursor-pointer z-10"
-                  title="Alternar Controles (ou Duplo Clique para Modo Imersivo)"
+                  title="Toque no centro para alternar controle ou Duplo Toque para sair da Imersão"
                 />
 
                 <div
@@ -661,11 +618,13 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                   className="absolute inset-y-0 right-0 w-2/5 cursor-e-resize z-20 group"
                   title="Próxima Página (Seta Direita / Espaço)"
                 >
-                  <div className="h-full flex items-center justify-end pr-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="p-2.5 rounded-full bg-[#12121f]/90 text-[#ffc531] border border-[#ffc531] shadow-xl">
-                      <ChevronRight className="w-6 h-6" />
+                  {!isFullscreen && (
+                    <div className="h-full flex items-center justify-end pr-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="p-2.5 rounded-full bg-[#12121f]/90 text-[#ffc531] border border-[#ffc531] shadow-xl">
+                        <ChevronRight className="w-6 h-6" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -693,9 +652,11 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                       }
                     }}
                   />
-                  <div className="absolute top-2 right-3 text-[9px] font-mono text-white/35 uppercase pointer-events-none">
-                    PÁG {currentPage + 1}/{totalPages}
-                  </div>
+                  {!isFullscreen && (
+                    <div className="absolute top-2 right-3 text-[9px] font-mono text-white/35 uppercase pointer-events-none">
+                      PÁG {currentPage + 1}/{totalPages}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
