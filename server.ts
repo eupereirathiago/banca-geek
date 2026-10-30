@@ -1,6 +1,9 @@
 // Disable HMR in AI Studio environment to prevent WebSocket closed without opened errors
 process.env.DISABLE_HMR = 'true';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -17,7 +20,10 @@ import nodeCrypto from 'crypto';
 // SUPABASE STORAGE & DATABASE INTEGRATION ('comics' & 'comic-covers' buckets)
 // ----------------------------------------------------
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://urnxozvpirwotccsxwgu.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+const SUPABASE_SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.dummy_fallback_key';
 const SUPABASE_STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'comics';
 const SUPABASE_COVERS_BUCKET = process.env.SUPABASE_COVERS_BUCKET || 'comic-covers';
 const SUPABASE_PROJECT_ID = 'urnxozvpirwotccsxwgu';

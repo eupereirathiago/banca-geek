@@ -7,7 +7,7 @@ export const SUPABASE_URL =
   import.meta.env?.VITE_SUPABASE_URL || 'https://urnxozvpirwotccsxwgu.supabase.co';
 
 export const SUPABASE_ANON_KEY =
-  import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
+  import.meta.env?.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.dummy_fallback_key';
 
 export const SUPABASE_STORAGE_BUCKET =
   import.meta.env?.VITE_SUPABASE_BUCKET || 'comics';
