@@ -1,0 +1,15 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+.aistudio/
+data/covers/
+public/covers/*
+!public/covers/.gitkeep
+public/assets/aistudio/
+*.tmp*
+.vercel/

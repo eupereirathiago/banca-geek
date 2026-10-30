@@ -1,0 +1,819 @@
+{
+  "version": 5,
+  "lastUpdated": "2026-10-30T23:22:47.086Z",
+  "users": {
+    "@colecionador": {
+      "username": "@colecionador",
+      "name": "Colecionador Geek",
+      "avatarUrl": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=300&q=80",
+      "pin": "1234",
+      "favoritePublisher": "Marvel",
+      "bio": "Leitor no Banca Geek",
+      "readingProgress": {},
+      "favorites": {},
+      "collection": {},
+      "bookmarks": [],
+      "readIssuesCount": 0,
+      "readBadge": "PRIMEIRA LEITURA • 0 REVISTAS",
+      "readingMilestone": "Início da Coleção",
+      "createdAt": "2026-10-29T22:53:25.762Z",
+      "lastLoginAt": "2026-10-29T22:53:25.762Z"
+    }
+  },
+  "readingProgress": {
+    "vault-f-0001-1UCcogyj": {
+      "comicId": "vault-f-0001-1UCcogyj",
+      "currentPage": 15,
+      "totalPages": 36,
+      "progressPercent": 42,
+      "isCompleted": false,
+      "updatedAt": "2026-10-23T18:18:42.198Z",
+      "comicTitle": "(1998) - Warlock v2 01 de 04 (1998) ( - )"
+    },
+    "vault-f-0032-1WdamBhk": {
+      "comicId": "vault-f-0032-1WdamBhk",
+      "currentPage": 6,
+      "totalPages": 36,
+      "progressPercent": 17,
+      "isCompleted": false,
+      "updatedAt": "2026-10-23T00:47:33.503Z",
+      "comicTitle": "Os Vingadores v1 087 A Historia de Um Rei 30MAR10 Aquiles Grego BR (1971)"
+    },
+    "vault-f-0035-1drEgxqn": {
+      "comicId": "vault-f-0035-1drEgxqn",
+      "currentPage": 3,
+      "totalPages": 36,
+      "progressPercent": 8,
+      "isCompleted": false,
+      "updatedAt": "2026-10-29T22:31:21.345Z",
+      "comicTitle": "Guardiões da Galáxia 002"
+    },
+    "vault-f-0102-1V_s9F57": {
+      "userId": "5NXSsxg9qVa0k4ov2YM5N0J138F3",
+      "totalPages": 36,
+      "comicId": "vault-f-0102-1V_s9F57",
+      "comicTitle": "(3) GUERRA INFINITA",
+      "currentPage": 8,
+      "updatedAt": "2026-10-24T23:01:00.449Z",
+      "isCompleted": false,
+      "progressPercent": 22
+    },
+    "vault-sb-mdq2lnbkzg": {
+      "comicId": "vault-sb-mdq2lnbkzg",
+      "currentPage": 2,
+      "totalPages": 36,
+      "progressPercent": 6,
+      "isCompleted": false,
+      "updatedAt": "2026-10-29T22:40:00.046Z",
+      "comicTitle": "046"
+    },
+    "vault-f-0005-13iteNKt": {
+      "comicId": "vault-f-0005-13iteNKt",
+      "currentPage": 2,
+      "totalPages": 36,
+      "progressPercent": 6,
+      "isCompleted": false,
+      "updatedAt": "2026-10-29T23:13:10.078Z",
+      "comicTitle": "04 • Batalha Final"
+    },
+    "vault-sb-mdi4ifnrln": {
+      "comicId": "vault-sb-mdi4ifnrln",
+      "currentPage": 1,
+      "totalPages": 36,
+      "progressPercent": 3,
+      "isCompleted": false,
+      "updatedAt": "2026-10-29T23:30:24.575Z",
+      "comicTitle": "028 SQ",
+      "timeSpentSeconds": 0
+    }
+  },
+  "favorites": {},
+  "collection": {},
+  "bookmarks": [],
+  "reviews": {},
+  "aiSynopses": {
+    "vault-f-0001-1UCcogyj": {
+      "comicId": "vault-f-0001-1UCcogyj",
+      "synopsis": "O messias dourado do cosmo está de volta! Após os turbulentos eventos que abalaram o equilíbrio do universo e fragmentaram a Guarda do Infinito, Adam Warlock busca expiação e isolamento, tentando escapar da pesada sina que o persegue desde sua criação pelo Enclave. No entanto, a paz é um luxo proibido para o avatar da vida. Quando uma nova perturbação no tecido da realidade começa a se manifestar nas profundezas do espaço, forças misteriosas e ameaças ancestrais emergem das sombras para reivindicar o poder absoluto. Atormentado pelos ecos de sua contraparte nefasta, o Magus, e assombrado pelo terrível legado espiritual de sua antiga Joia da Alma, Warlock é tragado novamente para o epicentro de uma conspiração cósmica sem precedentes. Com a sanidade posta à prova e alianças incertas no horizonte, ele terá que decidir se abraça seu papel de salvador relutante ou se permite que a escuridão consuma as estrelas de uma vez por todas.",
+      "logline": "Arrancado de seu exílio autoimposto, Adam Warlock deve confrontar o peso sufocante de seu destino antes que uma nova anomalia cósmica aniquile o frágil tecido da realidade.",
+      "mainCharacters": [
+        "Adam Warlock",
+        "Alto Evolucionário",
+        "Magus (manifestação/sombra)",
+        "Drax, o Destruidor"
+      ],
+      "tone": "Épico Cósmico, Místico e Existencial",
+      "historicalContext": "Lançada no final de 1998 sob os roteiros e traços de Tom Lyle, esta minissérie em quatro edições marcou uma tentativa da Marvel de redefinir o herói cósmico para a virada do milênio, fazendo a ponte entre a consagrada fase noventista de Jim Starlin e os novos rumos do núcleo estelar da editora. É um item cultuado por colecionadores por aprofundar a faceta psicológica e messiânica de Warlock.",
+      "recommendedFor": "Fãs das grandes sagas cósmicas da Marvel, entusiastas da Trilogia do Infinito de Jim Starlin e leitores fascinados por óperas espaciais filosóficas repletas de dilemas morais.",
+      "generatedAt": "2026-10-21T00:30:17.016Z"
+    },
+    "vault-f-0002": {
+      "comicId": "vault-f-0002",
+      "synopsis": "Após doze anos no exterior aprimorando corpo e mente, o jovem herdeiro Bruce Wayne retorna a uma Gotham City apodrecida pelo crime organizado e pela corrupção policial. Ao mesmo tempo, o tenente James Gordon é transferido para a cidade, confrontando imediatamente a podridão moral do departamento de polícia liderado pelo comissário Loeb e pelo violento detetive Flass. Enquanto Gordon luta para proteger sua esposa grávida em meio a emboscadas mortais e desconfiança interna, Bruce comete erros quase fatais em suas primeiras incursões pelas ruas sujas da metrópole. Ferido e à beira da morte em sua própria mansão, um chamado primal invade a janela de seu escritório: a revelação de que não basta ser apenas um vigilante, é preciso se tornar um símbolo do terror. Testemunhe a gênese definitiva do Cavaleiro das Trevas e a improvável aliança entre dois homens obstinados que mudarão o destino da América para sempre nas páginas deste divisor de águas absoluto dos quadrinhos modernos.",
+      "logline": "Em uma Gotham asfixiada pela corrupção policial e pela máfia, um jovem bilionário e um policial incorruptível trilham caminhos sangrentos para reinventar a própria ideia de justiça.",
+      "mainCharacters": [
+        "Bruce Wayne / Batman",
+        "Tenente James Gordon",
+        "Selina Kyle",
+        "Comissário Gillian Loeb",
+        "Detetive Arnold Flass",
+        "Carmine Falcone"
+      ],
+      "tone": "Noir Urbano, Policial Realista e Sombrio",
+      "historicalContext": "Publicada originalmente nos números #404 a #407 da revista mensal 'Batman' após o cataclisma editorial de 'Crise nas Infinitas Terras', a obra uniu o texto afiado de Frank Miller à arte estilizada e paleta icônica de David Mazzucchelli e Richmond Lewis. Esta minissérie redefiniu a mitologia do Homem-Morcego para as décadas seguintes, servindo de base direta para obras-primas do cinema como 'Batman Begins' (2005) de Christopher Nolan e 'The Batman' (2022) de Matt Reeves.",
+      "recommendedFor": "Fãs de ficção policial clássica, amantes do gênero noir, colecionadores de quadrinhos históricos e qualquer leitor que queira compreender o verdadeiro renascimento moderno do Batman.",
+      "generatedAt": "2026-10-22T01:43:20.906Z"
+    },
+    "vault-f-0057-1GlPCKmh": {
+      "comicId": "vault-f-0057-1GlPCKmh",
+      "synopsis": "Mergulhe na narrativa emocionante de \"A Saga de Thanos 01 - Homem de Ferro v1 055\". Publicação histórica da Marvel lançada originalmente em 1973. A história aprofunda os dilemas e confrontos de Saga de Thanos, trazendo reviravoltas intensas, diálogos memoráveis e ilustrações restauradas para a melhor experiência de leitura.",
+      "logline": "Os segredos e perigos de Saga de Thanos atingem seu ápice dramático em A Saga de Thanos 01 - Homem de Ferro v1 055.",
+      "mainCharacters": [
+        "Saga de Thanos",
+        "Heróis do Arco",
+        "Antagonistas"
+      ],
+      "tone": "Aventura Clássica Canônica",
+      "historicalContext": "Edição preservada do acervo da Marvel (1973), representativa da cronologia clássica com roteiro e arte consagradas pelos leitores.",
+      "recommendedFor": "Colecionadores e leitores que acompanham os grandes arcos da Marvel.",
+      "generatedAt": "2026-10-22T23:40:59.266Z"
+    },
+    "vault-f-0032-1WdamBhk": {
+      "comicId": "vault-f-0032-1WdamBhk",
+      "synopsis": "Mergulhe na narrativa emocionante de \"Os Vingadores v1 087 A Historia de Um Rei 30MAR10 Aquiles Grego BR (1971)\". Publicação histórica da Marvel lançada originalmente em 1988. A história aprofunda os dilemas e confrontos de PANTERA NEGRA, trazendo reviravoltas intensas, diálogos memoráveis e ilustrações restauradas para a melhor experiência de leitura.",
+      "logline": "Os segredos e perigos de PANTERA NEGRA atingem seu ápice dramático em Os Vingadores v1 087 A Historia de Um Rei 30MAR10 Aquiles Grego BR (1971).",
+      "mainCharacters": [
+        "PANTERA NEGRA",
+        "Heróis do Arco",
+        "Antagonistas"
+      ],
+      "tone": "Aventura Clássica Canônica",
+      "historicalContext": "Edição preservada do acervo da Marvel (1988), representativa da cronologia clássica com roteiro e arte consagradas pelos leitores.",
+      "recommendedFor": "Colecionadores e leitores que acompanham os grandes arcos da Marvel.",
+      "generatedAt": "2026-10-23T00:47:02.691Z"
+    },
+    "vault-f-0102-1V_s9F57": {
+      "comicId": "vault-f-0102-1V_s9F57",
+      "synopsis": "A paranoia atinge níveis catastróficos no coração do Universo Marvel! Enquanto as cópias sombrias e grotescas criadas pelo misterioso Magus continuam a se infiltrar e semear a desconfiança entre os Maiores Heróis da Terra, uma conferência desesperada é convocada no Edifício Baxter. Mas quando a linha entre o aliado genuíno e o impostor demoníaco se desfaz, até mesmo a liderança de Reed Richards e Capitão América é posta à prova de fogo. Enquanto isso, nos confins do cosmos, Adam Warlock e a Guarda do Infinito tentam desesperadamente desvendar o enigma das réplicas distorcidas, sem imaginar que Thanos — o Titã Louco — pode ser a única mente sádica e genial o bastante para compreender a verdadeira magnitude da ameaça que se ergue. Traições iminentes, conspirações cósmicas e o choque inevitável entre luz e sombra convergem nesta edição crucial, onde a confiança é um luxo mortal e a própria realidade corre risco de aniquilação.",
+      "logline": "Quando heróis enfrentam seus próprios reflexos corrompidos, a paranoia se torna a arma mais letal do cosmos.",
+      "mainCharacters": [
+        "Adam Warlock",
+        "Magus",
+        "Thanos",
+        "Senhor Fantástico (Reed Richards)",
+        "Capitão América",
+        "Homem de Ferro",
+        "Galactus"
+      ],
+      "tone": "Conflito Cósmico Multiversal e Suspense Psicológico",
+      "historicalContext": "Lançada no auge do fenômeno cósmico dos anos 90 sob a batuta de Jim Starlin e Ron Lim, Guerra Infinita #3 marca o ponto de virada dramática da minissérie, intensificando a caçada aos doppelgängers (as cópias malignas dos heróis) que se tornaram febre na época, além de consolidar a transição de Thanos de vilão niilista a um pragmático anti-herói cósmico.",
+      "recommendedFor": "Fãs de sagas cósmicas épicas dos anos 90, colecionadores das trilogias do Infinito de Jim Starlin e admiradores de tramas de espionagem e paranoia com heróis Marvel.",
+      "generatedAt": "2026-10-24T22:59:52.330Z"
+    },
+    "vault-f-0107-1Qj7aSoq": {
+      "comicId": "vault-f-0107-1Qj7aSoq",
+      "synopsis": "Mergulhe na narrativa emocionante de \"(2) DESAFIO INFINITO\". Publicação histórica da Marvel lançada originalmente em 1991. A história aprofunda os dilemas e confrontos de DESAFIO INFINITO, trazendo reviravoltas intensas, diálogos memoráveis e ilustrações restauradas para a melhor experiência de leitura.",
+      "logline": "Os segredos e perigos de DESAFIO INFINITO atingem seu ápice dramático em (2) DESAFIO INFINITO.",
+      "mainCharacters": [
+        "DESAFIO INFINITO",
+        "Heróis do Arco",
+        "Antagonistas"
+      ],
+      "tone": "Aventura Clássica Canônica",
+      "historicalContext": "Edição preservada do acervo da Marvel (1991), representativa da cronologia clássica com roteiro e arte consagradas pelos leitores.",
+      "recommendedFor": "Colecionadores e leitores que acompanham os grandes arcos da Marvel.",
+      "generatedAt": "2026-10-29T20:48:05.324Z"
+    },
+    "vault-f-0035-1drEgxqn": {
+      "comicId": "vault-f-0035-1drEgxqn",
+      "synopsis": "No alvorecer do Século XXXI, a galáxia ainda lambe as feridas deixadas pela tirania Badoon, mas uma relíquia do passado heroico da Terra pode selar o destino de todo o cosmos: o lendário escudo do Capitão América! O Major Vance Astro e seus bravos Guardiões da Galáxia continuam sua perigosa peregrinação pelo espaço profundo para recuperar esse símbolo imortal de liberdade. Contudo, eles não estão sozinhos nessa caçada. Taserface e os implacáveis Stark — uma raça alienígena selvagem que distorceu a tecnologia e a filosofia de Tony Stark em uma religião de pura destruição — estão no encalço da tripulação da Capitão América. Em meio a embates cósmicos viscerais e dilemas morais sobre o peso do heroísmo, Vance Astro precisa encarar seus próprios limites físicos e espirituais para impedir que o legado dos Vingadores caia em mãos tirânicas. Uma corrida contra o tempo repleta de ação frenética onde a menor falha custará o futuro de incontáveis mundos!",
+      "logline": "Em um futuro devastado, os Guardiões da Galáxia lutam contra fanáticos armados com a tecnologia Stark para proteger a última esperança do universo: o escudo do Capitão América.",
+      "mainCharacters": [
+        "Major Vance Astro",
+        "Yondu Udonta",
+        "Starhawk (Águia Estelar)",
+        "Martinex",
+        "Charlie-27",
+        "Nikki",
+        "Taserface",
+        "Os Stark"
+      ],
+      "tone": "Space Opera Épica e Aventura Cósmica Noventista",
+      "historicalContext": "Escrita e desenhada pela lenda Jim Valentino, esta edição dá continuidade à primeira série mensal dos Guardiões da Galáxia originais do século 31. O arco 'The Quest for the Shield' é amplamente aclamado por ligar o futuro cósmico à era de ouro dos Vingadores e por introduzir Taserface, vilão que décadas depois ganharia notoriedade no Universo Cinematográfico Marvel.",
+      "recommendedFor": "Fãs de sagas espaciais épicas, saudosistas da Marvel dos anos 90, e colecionadores fascinados pelo legado dos Vingadores no Século XXXI.",
+      "generatedAt": "2026-10-29T22:33:15.779Z"
+    },
+    "vault-sb-mdq2lnbkzg": {
+      "comicId": "vault-sb-mdq2lnbkzg",
+      "synopsis": "Em meio às cinzas e incertezas que abalaram o Universo DC em meados dos anos 90, esta edição eletrizante mergulha nossos heróis em uma teia de paranoia e provações extremas. Quando uma conspiração silenciosa ameaça romper as frágeis barreiras entre a ordem e o caos absoluto, alianças improváveis são forçadas a emergir das sombras. Confrontados por segredos enterrados no âmago de suas próprias fileiras, os protagonistas precisam encarar o peso de escolhas impossíveis: sacrificar seus princípios mais nobres para salvar inocentes, ou perecer sob o julgo implacável de um adversário implacável que antecipa cada um de seus passos. Uma narrativa visceral e repleta de tensão, onde a esperança é uma mercadoria escassa e o heroísmo é testado até as últimas consequências.",
+      "logline": "Quando as linhas entre justiça e sobrevivência se desfazem, salvar o mundo exigirá o sacrifício da própria alma.",
+      "mainCharacters": [
+        "Liga da Justiça",
+        "Sentinelas da Noite",
+        "A Mão Oculta"
+      ],
+      "tone": "Suspense Heroico e Sombrio dos Anos 90",
+      "historicalContext": "Lançada em 1995, a edição reflete com precisão a estética pós-Zero Hora e a busca da DC Comics por tramas mais complexas, psicológicas e densas, marcadas pelo característico dinamismo visual e narrativo que consagrou a Era de Ferro dos quadrinhos norte-americanos.",
+      "recommendedFor": "Para fãs da estética visceral e dramática da DC Comics dos anos 1990, narrativas de suspense tático e colecionadores de sagas consagradas da Era Moderna.",
+      "generatedAt": "2026-10-29T22:38:41.537Z"
+    },
+    "vault-f-0005-13iteNKt": {
+      "comicId": "vault-f-0005-13iteNKt",
+      "synopsis": "Mergulhe na narrativa emocionante de \"04 • Batalha Final\". Publicação histórica da Marvel lançada originalmente em 1977. A história aprofunda os dilemas e confrontos de Ms Marvel V1, trazendo reviravoltas intensas, diálogos memoráveis e ilustrações restauradas para a melhor experiência de leitura.",
+      "logline": "Os segredos e perigos de Ms Marvel V1 atingem seu ápice dramático em 04 • Batalha Final.",
+      "mainCharacters": [
+        "Ms Marvel V1",
+        "Heróis do Arco",
+        "Antagonistas"
+      ],
+      "tone": "Aventura Clássica Canônica",
+      "historicalContext": "Edição preservada do acervo da Marvel (1977), representativa da cronologia clássica com roteiro e arte consagradas pelos leitores.",
+      "recommendedFor": "Colecionadores e leitores que acompanham os grandes arcos da Marvel.",
+      "generatedAt": "2026-10-29T23:13:04.561Z"
+    },
+    "vault-sb-mdi4ifnrln": {
+      "comicId": "vault-sb-mdi4ifnrln",
+      "synopsis": "Mergulhe na narrativa emocionante de \"028 SQ\". Publicação histórica da DC Comics lançada originalmente em 1995. A história aprofunda os dilemas e confrontos de SUPABASE STORAGE ACERVO, trazendo reviravoltas intensas, diálogos memoráveis e ilustrações restauradas para a melhor experiência de leitura.",
+      "logline": "Os segredos e perigos de SUPABASE STORAGE ACERVO atingem seu ápice dramático em 028 SQ.",
+      "mainCharacters": [
+        "SUPABASE STORAGE ACERVO",
+        "Heróis do Arco",
+        "Antagonistas"
+      ],
+      "tone": "Aventura Clássica Canônica",
+      "historicalContext": "Edição preservada do acervo da DC Comics (1995), representativa da cronologia clássica com roteiro e arte consagradas pelos leitores.",
+      "recommendedFor": "Colecionadores e leitores que acompanham os grandes arcos da DC Comics.",
+      "generatedAt": "2026-10-29T23:31:12.917Z"
+    },
+    "vault-sb-c78f60aabbe4bcdd": {
+      "comicId": "vault-sb-c78f60aabbe4bcdd",
+      "synopsis": "Mergulhe na narrativa emocionante de \"WARLOCKV114VOLTAAOLAR25MAI09MKBAUDAMARVEL\". Publicação histórica da Marvel lançada originalmente em 1992. A história aprofunda os dilemas e confrontos de Warlock, trazendo reviravoltas intensas, diálogos memoráveis e ilustrações restauradas para a melhor experiência de leitura.",
+      "logline": "Os segredos e perigos de Warlock atingem seu ápice dramático em WARLOCKV114VOLTAAOLAR25MAI09MKBAUDAMARVEL.",
+      "mainCharacters": [
+        "Warlock",
+        "Heróis do Arco",
+        "Antagonistas"
+      ],
+      "tone": "Aventura Clássica Canônica",
+      "historicalContext": "Edição preservada do acervo da Marvel (1992), representativa da cronologia clássica com roteiro e arte consagradas pelos leitores.",
+      "recommendedFor": "Colecionadores e leitores que acompanham os grandes arcos da Marvel.",
+      "generatedAt": "2026-10-29T23:47:21.707Z"
+    },
+    "vault-f-0163-1x6WEU4J": {
+      "comicId": "vault-f-0163-1x6WEU4J",
+      "synopsis": "Nas entranhas do Clarim Diário, a verdade é a moeda mais perigosa de Nova York. Quando a Feiticeira Escarlate dobra o tecido da própria realidade no catastrófico evento de 'Dinastia M', o mundo desperta sob a soberania absoluta do Homo Superior. Em meio a esse novo império governado por Magneto, Jessica Jones e os jornalistas da coluna investigativa The Pulse se veem diante do maior furo da história da humanidade — ou de sua sentença de morte. Enquanto tenta proteger sua gravidez e decifrar as inconsistências de um mundo aparentemente perfeito onde os mutantes reinam e os humanos são cidadãos de segunda classe, Jessica precisa navegar por um labirinto de conspirações políticas e tensões raciais. Ao lado de Luke Cage e da veterana jornalista Kat Farrell, Jones descobre que a nova utopia mascara segredos hediondos que o regime mutante fará de tudo para enterrar. Uma crônica crua, urbana e visceral sobre o preço da verdade quando a própria realidade foi reescrita.",
+      "logline": "Quando os mutantes herdam a Terra, uma jornalista grávida e um punhado de repórteres desafiam o império de Magneto para expor a verdade por trás do mundo perfeito.",
+      "mainCharacters": [
+        "Jessica Jones",
+        "Luke Cage",
+        "Kat Farrell",
+        "Ben Urich",
+        "Magneto",
+        "Gavião Arqueiro"
+      ],
+      "tone": "Jornalismo Investigativo Noir e Distopia Urbana",
+      "historicalContext": "Criada por Brian Michael Bendis como uma continuação natural de sua aclamada série 'Alias', a revista 'The Pulse' ofereceu uma perspectiva 'ao nível da rua' dos grandes eventos da Marvel dos anos 2000. Este tie-in com 'Dinastia M' é especialmente reverenciado por explorar o impacto civil, político e midiático da tomada de poder pelos mutantes, mostrando a distopia sob a ótica da imprensa cotidiana em vez de focar apenas nos combates entre super-heróis.",
+      "recommendedFor": "Fãs de thrillers jornalísticos investigativos, leitores da fase dourada de Brian Michael Bendis, e colecionadores do universo expandido da saga Dinastia M.",
+      "generatedAt": "2026-10-30T00:26:44.182Z"
+    }
+  },
+  "activities": [
+    {
+      "id": "act-1793320004345-vx9u",
+      "timestamp": "2026-10-30T00:26:44.345Z",
+      "type": "ai_synopsis_generated",
+      "title": "Sinopse Gerada por IA ✨",
+      "description": "IA gerou a curadoria e sinopse completa para \"The Pulse - Especial Dinastia M HQ BR 17JUN06 Os Impossiveis BR\".",
+      "comicId": "vault-f-0163-1x6WEU4J",
+      "comicTitle": "The Pulse - Especial Dinastia M HQ BR 17JUN06 Os Impossiveis BR"
+    },
+    {
+      "id": "act-1792882789917-7jga",
+      "timestamp": "2026-10-24T22:59:49.917Z",
+      "type": "ai_synopsis_generated",
+      "title": "Sinopse Gerada por IA ✨",
+      "description": "IA gerou a curadoria e sinopse completa para \"(3) GUERRA INFINITA\".",
+      "comicId": "vault-f-0102-1V_s9F57",
+      "comicTitle": "(3) GUERRA INFINITA"
+    },
+    {
+      "id": "act-1793313195779-ffrz",
+      "type": "ai_synopsis_generated",
+      "title": "Sinopse Gerada por IA ✨",
+      "description": "Curadoria automatizada com Gemini criada para \"Guardiões da Galáxia 002\".",
+      "comicId": "vault-f-0035-1drEgxqn",
+      "comicTitle": "Guardiões da Galáxia 002",
+      "timestamp": "2026-10-29T22:33:15.779Z"
+    },
+    {
+      "id": "act-1793313521537-w3si",
+      "type": "ai_synopsis_generated",
+      "title": "Sinopse Gerada por IA ✨",
+      "description": "Curadoria automatizada com Gemini criada para \"046\".",
+      "comicId": "vault-sb-mdq2lnbkzg",
+      "comicTitle": "046",
+      "timestamp": "2026-10-29T22:38:41.537Z"
+    },
+    {
+      "id": "act-1793313521820-2njp",
+      "timestamp": "2026-10-29T22:38:41.820Z",
+      "type": "ai_synopsis_generated",
+      "title": "Sinopse Gerada por IA ✨",
+      "description": "IA gerou a curadoria e sinopse completa para \"046\".",
+      "comicId": "vault-sb-mdq2lnbkzg",
+      "comicTitle": "046"
+    },
+    {
+      "id": "act-init-001",
+      "type": "comic_uploaded",
+      "title": "Estante Conectada",
+      "description": "Sua estante pessoal e histórico de leitura foram configurados com sucesso.",
+      "timestamp": "2026-10-22T23:39:55.373Z"
+    },
+    {
+      "id": "act-1792633400906-sbv9",
+      "type": "ai_synopsis_generated",
+      "title": "Sinopse Gerada por IA ✨",
+      "description": "Curadoria automatizada com Gemini criada para \"Batman Ano Um\".",
+      "comicId": "vault-f-0002",
+      "comicTitle": "Batman Ano Um",
+      "timestamp": "2026-10-22T01:43:20.906Z"
+    },
+    {
+      "id": "act-1792542617016-7ou6",
+      "type": "ai_synopsis_generated",
+      "title": "Sinopse Gerada por IA ✨",
+      "description": "Curadoria automatizada com Gemini criada para \"Warlock v2 01 de 04\".",
+      "comicId": "vault-f-0001-1UCcogyj",
+      "comicTitle": "Warlock v2 01 de 04",
+      "timestamp": "2026-10-21T00:30:17.016Z"
+    }
+  ],
+  "customComics": [],
+  "covers": {
+    "vault-f-0001-1UCcogyj": {
+      "comicId": "vault-f-0001-1UCcogyj",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0001-1UCcogyj.jpg",
+      "extractedAt": "2026-10-30T23:22:47.044Z",
+      "totalPages": 36,
+      "title": "(1998) - Warlock v2 01 de 04 (1998) ( - )",
+      "format": "cbz"
+    },
+    "vault-f-0019-1IjiBJkm": {
+      "comicId": "vault-f-0019-1IjiBJkm",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0019-1IjiBJkm.jpg",
+      "extractedAt": "2026-10-30T23:22:47.045Z",
+      "totalPages": 36,
+      "title": "18 • Dia dos Namorados • Vingadores Macabros",
+      "format": "cbr"
+    },
+    "vault-f-0021-1buMoryd": {
+      "comicId": "vault-f-0021-1buMoryd",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0021-1buMoryd.jpg",
+      "extractedAt": "2026-10-30T23:22:47.045Z",
+      "totalPages": 36,
+      "title": "20 • A Nova Ms Marvel",
+      "format": "cbr"
+    },
+    "vault-f-0025-1rZ0xPCw": {
+      "comicId": "vault-f-0025-1rZ0xPCw",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0025-1rZ0xPCw.jpg",
+      "extractedAt": "2026-10-30T23:22:47.047Z",
+      "totalPages": 36,
+      "title": "24 • A Penúltima Aventura da Fúria Feminina da Marvel",
+      "format": "cbr"
+    },
+    "vault-f-0026-1ZNavfP0": {
+      "comicId": "vault-f-0026-1ZNavfP0",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0026-1ZNavfP0.jpg",
+      "extractedAt": "2026-10-30T23:22:47.055Z",
+      "totalPages": 36,
+      "title": "25 • A Batalha Final de Ms Marvel • Grite Vingança!",
+      "format": "cbr"
+    },
+    "vault-f-0028-1Dz6XGKP": {
+      "comicId": "vault-f-0028-1Dz6XGKP",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0028-1Dz6XGKP.jpg",
+      "extractedAt": "2026-10-30T23:22:47.055Z",
+      "totalPages": 36,
+      "title": "A origem de Ms Marvel • Capitão Marvel v1 #18 • A Vingança é Minha",
+      "format": "cbz"
+    },
+    "vault-f-0029-14XDpPHU": {
+      "comicId": "vault-f-0029-14XDpPHU",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0029-14XDpPHU.jpg",
+      "extractedAt": "2026-10-30T23:22:47.056Z",
+      "totalPages": 36,
+      "title": "Defensores 01 (Bloch)",
+      "format": "cbr"
+    },
+    "vault-f-0030-1rzrpMr3": {
+      "comicId": "vault-f-0030-1rzrpMr3",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0030-1rzrpMr3.jpg",
+      "extractedAt": "2026-10-30T23:22:47.057Z",
+      "totalPages": 36,
+      "title": "Defensores 02 (Bloch)",
+      "format": "cbr"
+    },
+    "vault-f-0031-1-O8-WI7": {
+      "comicId": "vault-f-0031-1-O8-WI7",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0031-1-O8-WI7.jpg",
+      "extractedAt": "2026-10-30T23:22:47.057Z",
+      "totalPages": 36,
+      "title": "Marvel Knights Pantera Negra 2099 HQ BR 19DEZ04 Os Impossiveis BR",
+      "format": "cbz"
+    },
+    "vault-f-0032-1WdamBhk": {
+      "comicId": "vault-f-0032-1WdamBhk",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0032-1WdamBhk.jpg",
+      "extractedAt": "2026-10-30T23:22:47.058Z",
+      "totalPages": 36,
+      "title": "Os Vingadores v1 087 A Historia de Um Rei 30MAR10 Aquiles Grego BR (1971)",
+      "format": "pdf"
+    },
+    "vault-f-0034-15uKmyAC": {
+      "comicId": "vault-f-0034-15uKmyAC",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0034-15uKmyAC.jpg",
+      "extractedAt": "2026-10-30T23:22:47.058Z",
+      "totalPages": 36,
+      "title": "Guardiões da Galáxia 001",
+      "format": "cbr"
+    },
+    "vault-f-0035-1drEgxqn": {
+      "comicId": "vault-f-0035-1drEgxqn",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0035-1drEgxqn.jpg",
+      "extractedAt": "2026-10-30T23:22:47.059Z",
+      "totalPages": 36,
+      "title": "Guardiões da Galáxia 002",
+      "format": "cbz"
+    },
+    "vault-f-0036-1agbTmzu": {
+      "comicId": "vault-f-0036-1agbTmzu",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0036-1agbTmzu.jpg",
+      "extractedAt": "2026-10-30T23:22:47.062Z",
+      "totalPages": 36,
+      "title": "Guardiões da Galáxia 003",
+      "format": "cbz"
+    },
+    "vault-f-0037-1kTEznBK": {
+      "comicId": "vault-f-0037-1kTEznBK",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0037-1kTEznBK.jpg",
+      "extractedAt": "2026-10-30T23:22:47.063Z",
+      "totalPages": 36,
+      "title": "Guardiões da Galáxia 004",
+      "format": "cbz"
+    },
+    "vault-f-0038-16R2tEPo": {
+      "comicId": "vault-f-0038-16R2tEPo",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0038-16R2tEPo.jpg",
+      "extractedAt": "2026-10-30T23:22:47.063Z",
+      "totalPages": 36,
+      "title": "Guardiões da Galáxia 005",
+      "format": "cbz"
+    },
+    "vault-f-0039-1kyoBXHv": {
+      "comicId": "vault-f-0039-1kyoBXHv",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0039-1kyoBXHv.jpg",
+      "extractedAt": "2026-10-30T23:22:47.064Z",
+      "totalPages": 36,
+      "title": "Guardiões da Galáxia 006",
+      "format": "cbz"
+    },
+    "vault-f-0040-1ztUn49G": {
+      "comicId": "vault-f-0040-1ztUn49G",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0040-1ztUn49G.jpg",
+      "extractedAt": "2026-10-30T23:22:47.064Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 01- O Mundo Precisa Dos Campeões",
+      "format": "cbr"
+    },
+    "vault-f-0041-1lIuMY_Q": {
+      "comicId": "vault-f-0041-1lIuMY_Q",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0041-1lIuMY_Q.jpg",
+      "extractedAt": "2026-10-30T23:22:47.065Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 02- A Quem os Deuses se Aliam",
+      "format": "cbr"
+    },
+    "vault-f-0042-1wpp3sUs": {
+      "comicId": "vault-f-0042-1wpp3sUs",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0042-1wpp3sUs.jpg",
+      "extractedAt": "2026-10-30T23:22:47.065Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 03 - Ameaça no Olimpo",
+      "format": "cbr"
+    },
+    "vault-f-0043-1_jop1pc": {
+      "comicId": "vault-f-0043-1_jop1pc",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0043-1_jop1pc.jpg",
+      "extractedAt": "2026-10-30T23:22:47.066Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 04 - Morte na Praia",
+      "format": "cbr"
+    },
+    "vault-f-0044-1Ui7oRPt": {
+      "comicId": "vault-f-0044-1Ui7oRPt",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0044-1Ui7oRPt.jpg",
+      "extractedAt": "2026-10-30T23:22:47.066Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 05",
+      "format": "cbr"
+    },
+    "vault-f-0045-1G8BBM7q": {
+      "comicId": "vault-f-0045-1G8BBM7q",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0045-1G8BBM7q.jpg",
+      "extractedAt": "2026-10-30T23:22:47.067Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 06",
+      "format": "cbr"
+    },
+    "vault-f-0046-17bNvNxR": {
+      "comicId": "vault-f-0046-17bNvNxR",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0046-17bNvNxR.jpg",
+      "extractedAt": "2026-10-30T23:22:47.068Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 07",
+      "format": "cbr"
+    },
+    "vault-f-0047-1p1qw--F": {
+      "comicId": "vault-f-0047-1p1qw--F",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0047-1p1qw--F.jpg",
+      "extractedAt": "2026-10-30T23:22:47.068Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 08",
+      "format": "cbr"
+    },
+    "vault-f-0048-1pIBDGQs": {
+      "comicId": "vault-f-0048-1pIBDGQs",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0048-1pIBDGQs.jpg",
+      "extractedAt": "2026-10-30T23:22:47.069Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 09",
+      "format": "cbr"
+    },
+    "vault-f-0049-1eUfRqLz": {
+      "comicId": "vault-f-0049-1eUfRqLz",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0049-1eUfRqLz.jpg",
+      "extractedAt": "2026-10-30T23:22:47.069Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 10",
+      "format": "cbr"
+    },
+    "vault-f-0050-1uXUQ-Kh": {
+      "comicId": "vault-f-0050-1uXUQ-Kh",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0050-1uXUQ-Kh.jpg",
+      "extractedAt": "2026-10-30T23:22:47.070Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 11",
+      "format": "cbr"
+    },
+    "vault-f-0051-1Kr2GrzF": {
+      "comicId": "vault-f-0051-1Kr2GrzF",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0051-1Kr2GrzF.jpg",
+      "extractedAt": "2026-10-30T23:22:47.071Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 12",
+      "format": "cbr"
+    },
+    "vault-f-0052-1kF6hhyD": {
+      "comicId": "vault-f-0052-1kF6hhyD",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0052-1kF6hhyD.jpg",
+      "extractedAt": "2026-10-30T23:22:47.072Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 13",
+      "format": "cbr"
+    },
+    "vault-f-0053-1REm63-_": {
+      "comicId": "vault-f-0053-1REm63-_",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0053-1REm63-_.jpg",
+      "extractedAt": "2026-10-30T23:22:47.072Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 14",
+      "format": "cbr"
+    },
+    "vault-f-0054-1cgeeOSe": {
+      "comicId": "vault-f-0054-1cgeeOSe",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0054-1cgeeOSe.jpg",
+      "extractedAt": "2026-10-30T23:22:47.073Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 15",
+      "format": "cbr"
+    },
+    "vault-f-0055-1kthmAB8": {
+      "comicId": "vault-f-0055-1kthmAB8",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0055-1kthmAB8.jpg",
+      "extractedAt": "2026-10-30T23:22:47.073Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 16",
+      "format": "cbr"
+    },
+    "vault-f-0056-1wUw7EHY": {
+      "comicId": "vault-f-0056-1wUw7EHY",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0056-1wUw7EHY.jpg",
+      "extractedAt": "2026-10-30T23:22:47.074Z",
+      "totalPages": 36,
+      "title": "Os Campeões - v1 # 17",
+      "format": "cbr"
+    },
+    "vault-f-0057-1GlPCKmh": {
+      "comicId": "vault-f-0057-1GlPCKmh",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0057-1GlPCKmh.jpg",
+      "extractedAt": "2026-10-30T23:22:47.075Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 01 - Homem de Ferro v1 055",
+      "format": "cbr"
+    },
+    "vault-f-0058-1TpOhSLn": {
+      "comicId": "vault-f-0058-1TpOhSLn",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0058-1TpOhSLn.jpg",
+      "extractedAt": "2026-10-30T23:22:47.076Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 02 - Capitao Marvel v1 25 Sabor de Loucura - da Marvel - So Quadrinhos",
+      "format": "cbr"
+    },
+    "vault-f-0059-1A8B87WR": {
+      "comicId": "vault-f-0059-1A8B87WR",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0059-1A8B87WR.jpg",
+      "extractedAt": "2026-10-30T23:22:47.077Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 03 - Capitao Marvel v1 26 Traicao - da Marvel - So Quadrinhos",
+      "format": "cbr"
+    },
+    "vault-f-0060-1snqrnF_": {
+      "comicId": "vault-f-0060-1snqrnF_",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0060-1snqrnF_.jpg",
+      "extractedAt": "2026-10-30T23:22:47.078Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 04 - Capitao Marvel v1 27 Aprisionado em Titan - da Marvel - So Quadrinhos",
+      "format": "cbr"
+    },
+    "vault-f-0061-1iWRMfEi": {
+      "comicId": "vault-f-0061-1iWRMfEi",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0061-1iWRMfEi.jpg",
+      "extractedAt": "2026-10-30T23:22:47.078Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 05 - Capitao Marvel v1 28 Quando os Titans se Confrontam - da Marvel -",
+      "format": "cbr"
+    },
+    "vault-f-0062-1Em0yC8R": {
+      "comicId": "vault-f-0062-1Em0yC8R",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0062-1Em0yC8R.jpg",
+      "extractedAt": "2026-10-30T23:22:47.079Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 06 - Capitao Marvel v1 29 Metamoforse - da Marvel - So Quadrinhos",
+      "format": "cbr"
+    },
+    "vault-f-0063-1pE-btHv": {
+      "comicId": "vault-f-0063-1pE-btHv",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0063-1pE-btHv.jpg",
+      "extractedAt": "2026-10-30T23:22:47.079Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 07 - Capitao Marvel v1 30 Nas Maos doTerrivel Controlador - da Marvel -",
+      "format": "cbr"
+    },
+    "vault-f-0064-1GNfNF0a": {
+      "comicId": "vault-f-0064-1GNfNF0a",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0064-1GNfNF0a.jpg",
+      "extractedAt": "2026-10-30T23:22:47.080Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 08 - Marvel Feature v1 11",
+      "format": "cbz"
+    },
+    "vault-f-0065-1qST_ILi": {
+      "comicId": "vault-f-0065-1qST_ILi",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0065-1qST_ILi.jpg",
+      "extractedAt": "2026-10-30T23:22:47.081Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 09 - Marvel Feature v1 12",
+      "format": "cbz"
+    },
+    "vault-f-0066-1hgAomwF": {
+      "comicId": "vault-f-0066-1hgAomwF",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0066-1hgAomwF.jpg",
+      "extractedAt": "2026-10-30T23:22:47.081Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 10 - Demolidor v1 104 Ameaca das Luas de Saturno- 01 de 02 HQ BR 24AGO07",
+      "format": "cbr"
+    },
+    "vault-f-0067-1XUwNYqZ": {
+      "comicId": "vault-f-0067-1XUwNYqZ",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0067-1XUwNYqZ.jpg",
+      "extractedAt": "2026-10-30T23:22:47.082Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 11 - Demolidor v1 105 Ameaca das Luas de Saturno- 02 de 02 HQ BR 25SET07",
+      "format": "cbr"
+    },
+    "vault-f-0068-1CLPlOr_": {
+      "comicId": "vault-f-0068-1CLPlOr_",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0068-1CLPlOr_.jpg",
+      "extractedAt": "2026-10-30T23:22:47.083Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 12 - Demolidor v1 106 O Blefe do Amigo HQ BR 12ABR08",
+      "format": "cbr"
+    },
+    "vault-f-0069-1nSgAjcG": {
+      "comicId": "vault-f-0069-1nSgAjcG",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0069-1nSgAjcG.jpg",
+      "extractedAt": "2026-10-30T23:22:47.083Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 13 - Demolidor v1 107 O Blefe de um Homem Cego HQ BR 30JUL08",
+      "format": "cbr"
+    },
+    "vault-f-0070-1CJIysX7": {
+      "comicId": "vault-f-0070-1CJIysX7",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0070-1CJIysX7.jpg",
+      "extractedAt": "2026-10-30T23:22:47.084Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 14 - Capitao Marvel v1 31 O Principio do Fim MK - da Marvel",
+      "format": "cbr"
+    },
+    "vault-f-0071-1z0HJ5B0": {
+      "comicId": "vault-f-0071-1z0HJ5B0",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0071-1z0HJ5B0.jpg",
+      "extractedAt": "2026-10-30T23:22:47.084Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 15 - Capitao Marvel v1 32 Thanos o Deus Louco - da Marvel -",
+      "format": "cbr"
+    },
+    "vault-f-0072-1hz3QfGF": {
+      "comicId": "vault-f-0072-1hz3QfGF",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0072-1hz3QfGF.jpg",
+      "extractedAt": "2026-10-30T23:22:47.085Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 16 - Vingadores v1 125 O Poder de Babel - da Marvel -",
+      "format": "cbr"
+    },
+    "vault-f-0073-1MB6htUE": {
+      "comicId": "vault-f-0073-1MB6htUE",
+      "mimeType": "image/jpeg",
+      "coverPath": "/app/applet/data/covers/vault-f-0073-1MB6htUE.jpg",
+      "extractedAt": "2026-10-30T23:22:47.086Z",
+      "totalPages": 36,
+      "title": "A Saga de Thanos 17 - Capitao Marvel v1 33 Um Homem Contra um Deus - da Marvel -",
+      "format": "cbz"
+    }
+  },
+  "settings": {
+    "readerTheme": "dark",
+    "readingMode": "single",
+    "fitMode": "contain",
+    "autoAdvance": false,
+    "autoAdvanceSeconds": 8
+  },
+  "profiles": {
+    "teste_leitor": {
+      "name": "TESTE_LEITOR",
+      "readBadge": "SELO INICIANTE",
+      "updatedAt": "2026-10-22T23:49:36.401Z"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Banca Geek Collector Edition",
+  "description": "Plataforma de preservação e leitura de quadrinhos clássicos com leitor de alta fidelidade, cronologias oficiais e acervo restaurado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

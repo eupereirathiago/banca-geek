@@ -1,0 +1,193 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile, reading milestone level, and reader preferences",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "readBadge": { "type": "string", "maxLength": 150 },
+        "readingMilestone": { "type": "string", "maxLength": 100 },
+        "avatarUrl": { "type": "string", "maxLength": 150000 },
+        "readIssuesCount": { "type": "integer" },
+        "nextMilestoneCount": { "type": "integer" },
+        "nextBadgeName": { "type": "string", "maxLength": 150 },
+        "completedSagasCount": { "type": "integer" },
+        "favoritePublisher": { "type": "string", "maxLength": 100 },
+        "bio": { "type": "string", "maxLength": 500 },
+        "email": { "type": "string", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name"]
+    },
+    "ReadingProgress": {
+      "title": "ReadingProgress",
+      "description": "Current page and completion status for a comic",
+      "type": "object",
+      "properties": {
+        "comicId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "currentPage": { "type": "integer" },
+        "totalPages": { "type": "integer" },
+        "progressPercent": { "type": "integer" },
+        "isCompleted": { "type": "boolean" },
+        "comicTitle": { "type": "string", "maxLength": 200 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["comicId", "userId", "currentPage", "totalPages", "progressPercent", "isCompleted", "updatedAt"]
+    },
+    "FavoriteItem": {
+      "title": "FavoriteItem",
+      "description": "User's favorited comic issue",
+      "type": "object",
+      "properties": {
+        "comicId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "maxLength": 200 },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["comicId", "userId", "addedAt"]
+    },
+    "CollectionItem": {
+      "title": "CollectionItem",
+      "description": "User's personal bookshelf entry",
+      "type": "object",
+      "properties": {
+        "comicId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "maxLength": 200 },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["comicId", "userId", "addedAt"]
+    },
+    "BookmarkItem": {
+      "title": "BookmarkItem",
+      "description": "Page bookmark and reading note",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "comicId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "comicTitle": { "type": "string", "maxLength": 200 },
+        "pageNumber": { "type": "integer" },
+        "note": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "comicId", "userId", "comicTitle", "pageNumber", "createdAt"]
+    },
+    "ComicReview": {
+      "title": "ComicReview",
+      "description": "Comic rating and personal review",
+      "type": "object",
+      "properties": {
+        "comicId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "comicTitle": { "type": "string", "maxLength": 200 },
+        "rating": { "type": "integer" },
+        "reviewText": { "type": "string", "maxLength": 2000 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["comicId", "userId", "rating", "reviewText", "updatedAt"]
+    },
+    "AiSynopsis": {
+      "title": "AiSynopsis",
+      "description": "AI-generated comic synopsis and analysis",
+      "type": "object",
+      "properties": {
+        "comicId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "synopsis": { "type": "string", "maxLength": 5000 },
+        "logline": { "type": "string", "maxLength": 500 },
+        "tone": { "type": "string", "maxLength": 200 },
+        "historicalContext": { "type": "string", "maxLength": 2000 },
+        "generatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["comicId", "synopsis", "logline", "generatedAt"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "Activity timeline entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "type": { "type": "string", "maxLength": 50 },
+        "title": { "type": "string", "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 500 },
+        "comicId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "comicTitle": { "type": "string", "maxLength": 200 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "type", "title", "description", "timestamp"]
+    },
+    "CustomComic": {
+      "title": "CustomComic",
+      "description": "User uploaded comic metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "maxLength": 200 },
+        "publisher": { "type": "string", "maxLength": 100 },
+        "totalPages": { "type": "integer" },
+        "coverUrl": { "type": "string", "maxLength": 500 },
+        "format": { "type": "string", "maxLength": 20 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "title", "totalPages", "createdAt"]
+    },
+    "ConnectionTest": {
+      "title": "ConnectionTest",
+      "description": "Connection test doc for system health checks",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "maxLength": 50 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User account profile and settings"
+    },
+    "/users/{userId}/readingProgress/{comicId}": {
+      "schema": "ReadingProgress",
+      "description": "Reading progress for a specific comic issue"
+    },
+    "/users/{userId}/favorites/{comicId}": {
+      "schema": "FavoriteItem",
+      "description": "User favorites list"
+    },
+    "/users/{userId}/collection/{comicId}": {
+      "schema": "CollectionItem",
+      "description": "User personal comic collection shelf"
+    },
+    "/users/{userId}/bookmarks/{bookmarkId}": {
+      "schema": "BookmarkItem",
+      "description": "User page bookmarks"
+    },
+    "/users/{userId}/reviews/{comicId}": {
+      "schema": "ComicReview",
+      "description": "User reviews and star ratings"
+    },
+    "/users/{userId}/activities/{activityId}": {
+      "schema": "ActivityLog",
+      "description": "User activity timeline log"
+    },
+    "/users/{userId}/customComics/{comicId}": {
+      "schema": "CustomComic",
+      "description": "User imported comics metadata"
+    },
+    "/synopses/{comicId}": {
+      "schema": "AiSynopsis",
+      "description": "Curated comic synopses"
+    },
+    "/test/{testId}": {
+      "schema": "ConnectionTest",
+      "description": "Firestore connection health check"
+    }
+  }
+}

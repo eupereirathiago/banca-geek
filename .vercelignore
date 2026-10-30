@@ -1,0 +1,7 @@
+# Ignorar arquivos temporários, scripts de extração e caches locais
+scripts/
+test-drive.js
+data/covers/
+.git/
+.env.local
+.DS_Store
