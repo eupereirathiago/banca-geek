@@ -14,6 +14,7 @@ import {
   BookmarkItem,
   ComicReview,
   getDatabaseState,
+  subscribeToDatabaseChanges,
 } from './databaseService';
 import { syncDatabaseStateToSupabaseStorage } from './supabaseService';
 
@@ -73,6 +74,13 @@ function triggerDebouncedSupabaseSync() {
     }
   }, 1200);
 }
+
+// Automatically sync to cloud on local database mutations
+try {
+  subscribeToDatabaseChanges(() => {
+    triggerDebouncedSupabaseSync();
+  });
+} catch {}
 
 /**
  * Initializes Supabase cloud sync for a user

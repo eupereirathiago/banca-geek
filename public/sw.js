@@ -1,13 +1,11 @@
-// Banca Geek PWA Service Worker
-const CACHE_NAME = 'banca-geek-pwa-v1';
+// Banca Geek PWA Service Worker (v2 - Network First for HTML and Applet Scripts)
+const CACHE_NAME = 'banca-geek-pwa-v2';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
   '/manifest.json',
   '/icon.svg',
   '/pwa-192x192.png',
   '/pwa-512x512.png',
-  '/apple-touch-icon.png'
+  '/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -34,28 +32,80 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+// Allow client pages to signal cache purge
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'PURGE_CACHE') {
+    caches.keys().then((keys) => {
+      return Promise.all(keys.map((k) => caches.delete(k)));
+    }).then(() => {
+      if (event.source) {
+        event.source.postMessage({ type: 'PURGED' });
+      }
+    });
+  }
+});
 
-  // Network-first for API requests
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // 1. Never intercept or cache API requests with stale data
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(event.request);
+      fetch(req).catch(() => {
+        return caches.match(req);
       })
     );
     return;
   }
 
-  // Stale-while-revalidate for static assets & documents
+  // 2. Navigation requests (HTML documents): ALWAYS NETWORK-FIRST
+  // This guarantees users always get the latest bundle and never get stuck with dead hashes
+  const isHtml =
+    req.mode === 'navigate' ||
+    (req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
+
+  if (isHtml) {
+    event.respondWith(
+      fetch(req)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Fall back to cache only when totally offline
+          return caches.match(req);
+        })
+    );
+    return;
+  }
+
+  // 3. Application source scripts and Vite modules: ALWAYS NETWORK-FIRST
+  if (
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/node_modules/')
+  ) {
+    event.respondWith(
+      fetch(req).catch(() => {
+        return caches.match(req);
+      })
+    );
+    return;
+  }
+
+  // 4. Static assets (images, icons, fonts): Stale-while-revalidate
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
+    caches.match(req).then((cachedResponse) => {
+      const fetchPromise = fetch(req)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
+              cache.put(req, responseToCache);
             });
           }
           return networkResponse;

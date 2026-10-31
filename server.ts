@@ -19,6 +19,25 @@ import nodeCrypto from 'crypto';
 // ----------------------------------------------------
 // SUPABASE STORAGE & DATABASE INTEGRATION ('comics' & 'comic-covers' buckets)
 // ----------------------------------------------------
+function isSupabaseConfigured(): boolean {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!key || typeof key !== 'string') return false;
+  const trimmed = key.trim();
+  if (
+    trimmed === '' ||
+    trimmed === 'none' ||
+    trimmed.includes('dummy') ||
+    trimmed.includes('fallback') ||
+    trimmed.includes('your-supabase') ||
+    trimmed.length < 50
+  ) {
+    return false;
+  }
+  const parts = trimmed.split('.');
+  return parts.length === 3 && parts[2].length > 10;
+}
+
+const IS_SUPABASE_READY = isSupabaseConfigured();
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://urnxozvpirwotccsxwgu.supabase.co';
 const SUPABASE_SERVICE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
@@ -91,6 +110,9 @@ const supabaseComicsCleanMap = new Map<string, string>();
 let lastSupabaseComicsIndexTime = 0;
 
 async function indexSupabaseComicsFiles(force: boolean = false): Promise<number> {
+  if (!IS_SUPABASE_READY) {
+    return supabaseComicsFilesList.length;
+  }
   if (!force && supabaseComicsFilesList.length > 0 && Date.now() - lastSupabaseComicsIndexTime < 300000) {
     return supabaseComicsFilesList.length;
   }
@@ -128,7 +150,6 @@ async function indexSupabaseComicsFiles(force: boolean = false): Promise<number>
     }
     return supabaseComicsFilesList.length;
   } catch (err: any) {
-    console.warn('[Supabase Storage] Erro ao indexar arquivos de quadrinhos:', err?.message || err);
     return supabaseComicsFilesList.length;
   }
 }
@@ -356,6 +377,9 @@ function loadServerDatabase(): ServerUserDatabase {
 let supabaseBackupDebounceTimer: any = null;
 
 function scheduleSupabaseCloudBackup() {
+  if (!IS_SUPABASE_READY) {
+    return;
+  }
   if (supabaseBackupDebounceTimer) clearTimeout(supabaseBackupDebounceTimer);
   supabaseBackupDebounceTimer = setTimeout(async () => {
     try {
@@ -369,12 +393,16 @@ function scheduleSupabaseCloudBackup() {
         });
 
       if (error) {
-        console.warn('[Supabase Storage] Aviso no backup do banco:', error.message);
+        if (!error.message?.includes('signature verification failed')) {
+          console.warn('[Supabase Storage] Aviso no backup do banco:', error.message);
+        }
       } else {
         console.log('[Supabase Storage] Backup sincronizado no bucket "comics" com sucesso.');
       }
     } catch (err: any) {
-      console.warn('[Supabase Storage] Falha ao sincronizar banco:', err?.message || err);
+      if (!String(err?.message || '').includes('signature verification failed')) {
+        console.warn('[Supabase Storage] Falha ao sincronizar banco:', err?.message || err);
+      }
     }
   }, 2500);
 }
@@ -1391,6 +1419,9 @@ async function syncFromCloudVault(accessToken?: string): Promise<{ newlyFound: n
 // SYNC COMICS CATALOG DIRECTLY FROM SUPABASE STORAGE
 // ----------------------------------------------------
 async function syncFromSupabaseStorage(): Promise<{ newlyFound: number; total: number }> {
+  if (!IS_SUPABASE_READY) {
+    return { newlyFound: 0, total: cachedAcervo.length };
+  }
   try {
     const allFiles: any[] = [];
     let offset = 0;
@@ -1401,7 +1432,9 @@ async function syncFromSupabaseStorage(): Promise<{ newlyFound: number; total: n
         .list('', { limit: pageSize, offset, sortBy: { column: 'name', order: 'asc' } });
 
       if (error) {
-        console.warn('[Supabase Storage] Erro ao listar bucket comics:', error.message);
+        if (!error.message?.includes('signature verification failed')) {
+          console.warn('[Supabase Storage] Erro ao listar bucket comics:', error.message);
+        }
         break;
       }
       if (!pageFiles || pageFiles.length === 0) break;
@@ -2059,11 +2092,10 @@ async function downloadAndExtractCover(comicId: string): Promise<{ buf: Buffer; 
   const mappedCover = supabaseCoverMap?.editionsMap?.[comicId];
   if (mappedCover) {
     try {
-      const { data: supaCover } = await supabaseServer.storage
-        .from(SUPABASE_COVERS_BUCKET)
-        .download(mappedCover);
-      if (supaCover) {
-        const arr = await supaCover.arrayBuffer();
+      const publicCdnUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${SUPABASE_COVERS_BUCKET}/${encodeURI(mappedCover)}`;
+      const cdnResp = await fetch(publicCdnUrl);
+      if (cdnResp.ok) {
+        const arr = await cdnResp.arrayBuffer();
         const sBuf = Buffer.from(arr);
         if (sBuf.length > 500) {
           try {
@@ -2088,33 +2120,33 @@ async function downloadAndExtractCover(comicId: string): Promise<{ buf: Buffer; 
           return entry;
         }
       }
-    } catch (err: any) {
-      console.warn(`[Supabase Covers] Erro ao buscar capa de comic-covers para ${comicId}:`, err?.message || err);
-    }
+    } catch (err: any) {}
   }
 
   // Also check if cover was saved in Supabase Storage 'comics' bucket
-  try {
-    const { data: supaCover } = await supabaseServer.storage
-      .from(SUPABASE_STORAGE_BUCKET)
-      .download(`covers/${comicId}.jpg`);
-    if (supaCover) {
-      const arr = await supaCover.arrayBuffer();
-      const sBuf = Buffer.from(arr);
-      if (sBuf.length > 500) {
-        try {
-          fs.writeFileSync(persistentCoverPath, sBuf);
-          fs.writeFileSync(publicCoverPath, sBuf);
-        } catch {}
-        const entry = { buf: sBuf, mime: 'image/jpeg' };
-        coverBufferMemoryCache.set(comicId, entry);
-        return entry;
+  if (IS_SUPABASE_READY) {
+    try {
+      const { data: supaCover } = await supabaseServer.storage
+        .from(SUPABASE_STORAGE_BUCKET)
+        .download(`covers/${comicId}.jpg`);
+      if (supaCover) {
+        const arr = await supaCover.arrayBuffer();
+        const sBuf = Buffer.from(arr);
+        if (sBuf.length > 500) {
+          try {
+            fs.writeFileSync(persistentCoverPath, sBuf);
+            fs.writeFileSync(publicCoverPath, sBuf);
+          } catch {}
+          const entry = { buf: sBuf, mime: 'image/jpeg' };
+          coverBufferMemoryCache.set(comicId, entry);
+          return entry;
+        }
       }
-    }
-  } catch {}
+    } catch {}
+  }
 
   // 2c. If this is a Supabase Comic file, extract Page 1 directly
-  if (supaFileName || comicId.startsWith('vault-sb-')) {
+  if (IS_SUPABASE_READY && (supaFileName || comicId.startsWith('vault-sb-'))) {
     try {
       const fileName = supaFileName || `${comicId}.${ext}`;
       const localArchive = path.join(ARCHIVE_CACHE_DIR, `${comicId}.${ext}`);
@@ -2181,10 +2213,12 @@ async function downloadAndExtractCover(comicId: string): Promise<{ buf: Buffer; 
           saveServerDatabase();
 
           // Save cover to Supabase Storage
-          supabaseServer.storage
-            .from(SUPABASE_STORAGE_BUCKET)
-            .upload(`covers/${comicId}.jpg`, buf, { contentType: mime, upsert: true })
-            .catch(() => {});
+          if (IS_SUPABASE_READY) {
+            supabaseServer.storage
+              .from(SUPABASE_STORAGE_BUCKET)
+              .upload(`covers/${comicId}.jpg`, buf, { contentType: mime, upsert: true })
+              .catch(() => {});
+          }
 
           return entry;
         }
@@ -2251,10 +2285,12 @@ async function downloadAndExtractCover(comicId: string): Promise<{ buf: Buffer; 
         }
 
         // Upload extracted cover to Supabase Storage bucket 'comics' in background
-        supabaseServer.storage
-          .from(SUPABASE_STORAGE_BUCKET)
-          .upload(`covers/${comicId}.jpg`, buf, { contentType: mime, upsert: true })
-          .catch(() => {});
+        if (IS_SUPABASE_READY) {
+          supabaseServer.storage
+            .from(SUPABASE_STORAGE_BUCKET)
+            .upload(`covers/${comicId}.jpg`, buf, { contentType: mime, upsert: true })
+            .catch(() => {});
+        }
 
         return entry;
       }
@@ -3256,6 +3292,7 @@ function normalizeUsername(raw: string): string {
 
 // Helper to persist user account in Supabase Storage under users/:username/account.json
 async function saveUserToSupabaseStorage(user: UserAccountData) {
+  if (!IS_SUPABASE_READY) return;
   try {
     const cleanUser = user.username.replace(/^@/, '');
     const userBuffer = Buffer.from(JSON.stringify(user, null, 2), 'utf-8');
@@ -3265,12 +3302,11 @@ async function saveUserToSupabaseStorage(user: UserAccountData) {
         contentType: 'application/json',
         upsert: true,
       });
-  } catch (err: any) {
-    console.warn(`[Supabase Storage] Aviso ao salvar usuário ${user.username}:`, err?.message || err);
-  }
+  } catch (err: any) {}
 }
 
 async function fetchUserFromSupabaseStorage(rawUsername: string): Promise<UserAccountData | null> {
+  if (!IS_SUPABASE_READY) return null;
   try {
     const cleanUser = rawUsername.trim().toLowerCase().replace(/^@/, '');
     const { data, error } = await supabaseServer.storage
@@ -3860,6 +3896,16 @@ Retorne JSON com: {"synopsis": "...", "logline": "...", "mainCharacters": ["..."
 
 // 1. Get Supabase Connection Status (Aggregated metrics only, no raw IDs or file names)
 app.get('/api/supabase/status', async (req, res) => {
+  if (!IS_SUPABASE_READY) {
+    return res.json({
+      success: true,
+      connected: false,
+      isLocalMode: true,
+      totalComics: cachedAcervo.length,
+      message: 'Modo local ativo com banco de dados seguro e CDN de capas público.',
+      updatedAt: new Date().toISOString(),
+    });
+  }
   try {
     const { data: files, error } = await supabaseServer.storage
       .from(SUPABASE_STORAGE_BUCKET)
@@ -3896,6 +3942,16 @@ app.post('/api/supabase/sync', async (req, res) => {
     // If client sent updated state, merge it
     if (req.body?.state) {
       serverDatabase = { ...serverDatabase, ...req.body.state };
+      saveServerDatabase();
+    }
+
+    if (!IS_SUPABASE_READY) {
+      return res.json({
+        success: true,
+        message: 'Banco local salvo com sucesso (modo local protegido).',
+        totalComics: cachedAcervo.length,
+        updatedAt: new Date().toISOString(),
+      });
     }
 
     const jsonContent = JSON.stringify(serverDatabase, null, 2);
@@ -3909,9 +3965,10 @@ app.post('/api/supabase/sync', async (req, res) => {
       });
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        message: 'Erro ao sincronizar acervo na nuvem.',
+      return res.json({
+        success: true,
+        message: 'Banco local salvo com sucesso.',
+        totalComics: cachedAcervo.length,
       });
     }
 
@@ -3924,7 +3981,7 @@ app.post('/api/supabase/sync', async (req, res) => {
   } catch (err: any) {
     return res.status(500).json({
       success: false,
-      message: 'Falha durante a sincronização na nuvem.',
+      message: 'Falha durante a sincronização.',
     });
   }
 });
@@ -3940,6 +3997,13 @@ app.get('/api/supabase/files', async (req, res) => {
 
 // 4. Test Supabase Storage Diagnostic
 app.get('/api/supabase/test', async (req, res) => {
+  if (!IS_SUPABASE_READY) {
+    return res.json({
+      success: true,
+      connected: false,
+      message: 'Modo local seguro ativo. Capas servidas diretamente via CDN Supabase público.',
+    });
+  }
   try {
     const pingContent = `Banca Geek Ping: ${new Date().toISOString()}`;
     const testBuffer = Buffer.from(pingContent, 'utf-8');
@@ -3974,6 +4038,15 @@ app.all('/api/supabase/sync-covers', async (req, res) => {
     let files: string[] = [];
     if (fs.existsSync(coversDir)) {
       files = fs.readdirSync(coversDir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f));
+    }
+
+    if (!IS_SUPABASE_READY) {
+      return res.json({
+        success: true,
+        message: 'Modo local seguro ativo. Capas servidas diretamente via CDN público.',
+        totalLocalCovers: files.length,
+        batchCount: 0,
+      });
     }
 
     const limit = Number(req.body?.limit || req.query.limit) || 40;

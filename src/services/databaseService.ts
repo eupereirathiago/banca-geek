@@ -5,13 +5,24 @@
  * Syncs seamlessly between localStorage (offline) and the backend database.
  */
 
-import {
-  pushCloudReadingProgress,
-  pushCloudFavorite,
-  pushCloudCollection,
-  pushCloudBookmark,
-  pushCloudReview,
-} from './cloudSyncService';
+type DatabaseChangeSubscriber = (state: UserDatabaseState) => void;
+const databaseSubscribers: DatabaseChangeSubscriber[] = [];
+
+export function subscribeToDatabaseChanges(fn: DatabaseChangeSubscriber): () => void {
+  databaseSubscribers.push(fn);
+  return () => {
+    const idx = databaseSubscribers.indexOf(fn);
+    if (idx !== -1) databaseSubscribers.splice(idx, 1);
+  };
+}
+
+function notifyDatabaseSubscribers(state: UserDatabaseState) {
+  databaseSubscribers.forEach((fn) => {
+    try {
+      fn(state);
+    } catch {}
+  });
+}
 
 export interface ReadingProgressRecord {
   comicId: string;
@@ -171,6 +182,7 @@ function persistLocalState(state: UserDatabaseState) {
     console.warn('[DB Service] Falha ao persistir no localStorage:', err);
   }
   scheduleServerSync();
+  notifyDatabaseSubscribers(state);
 }
 
 function scheduleServerSync() {
@@ -287,9 +299,6 @@ export function recordReadingProgress(
 
   persistLocalState(state);
 
-  // Sync to Cloud Firestore in background
-  pushCloudReadingProgress(record).catch(() => {});
-
   // Fire individual endpoint in background for ACID persistence
   fetch('/api/db/progress', {
     method: 'POST',
@@ -330,9 +339,6 @@ export function toggleFavoriteItem(comicId: string, title?: string): boolean {
 
   persistLocalState(state);
 
-  // Sync to Cloud Firestore in background
-  pushCloudFavorite(comicId, !exists, title).catch(() => {});
-
   fetch('/api/db/favorite', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -371,9 +377,6 @@ export function toggleCollectionItem(comicId: string, title?: string): boolean {
   }
 
   persistLocalState(state);
-
-  // Sync to Cloud Firestore in background
-  pushCloudCollection(comicId, !exists, title).catch(() => {});
 
   fetch('/api/db/collection', {
     method: 'POST',
@@ -416,9 +419,6 @@ export function addBookmarkItem(
 
   persistLocalState(state);
 
-  // Sync to Cloud Firestore in background
-  pushCloudBookmark(item, false).catch(() => {});
-
   fetch('/api/db/bookmark', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -430,13 +430,8 @@ export function addBookmarkItem(
 
 export function removeBookmarkItem(bookmarkId: string) {
   const state = loadLocalState();
-  const target = state.bookmarks.find((b) => b.id === bookmarkId);
   state.bookmarks = state.bookmarks.filter((b) => b.id !== bookmarkId);
   persistLocalState(state);
-
-  if (target) {
-    pushCloudBookmark(target, true).catch(() => {});
-  }
 
   fetch('/api/db/bookmark', {
     method: 'POST',
@@ -474,9 +469,6 @@ export function saveRatingAndReview(
   });
 
   persistLocalState(state);
-
-  // Sync to Cloud Firestore in background
-  pushCloudReview(review).catch(() => {});
 
   fetch('/api/db/review', {
     method: 'POST',

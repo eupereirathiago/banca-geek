@@ -20,28 +20,48 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
-      // Gracefully ignore Vite WebSocket HMR errors in iframe/preview environment
+      // 1. Force unregister any legacy service workers on preview/development hosts to prevent stale bundle traps
       (function() {
-        function shouldSuppress(msg, stack, filename) {
-          var str = (String(msg || '') + ' ' + String(stack || '') + ' ' + String(filename || '')).toLowerCase();
-          return str.includes('websocket') || str.includes('@vite/client') || str.includes('without opened') || str.includes('connection closed');
-        }
-        window.addEventListener('unhandledrejection', function(e) {
-          var reason = e ? e.reason : null;
-          var msg = reason ? (reason.message || String(reason)) : '';
-          var stack = reason ? (reason.stack || '') : '';
-          if (shouldSuppress(msg, stack, '')) {
-            e.preventDefault();
-            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        try {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              for (var i = 0; i < regs.length; i++) {
+                if (window.location.hostname === 'localhost' || window.location.hostname.includes('aistudio') || window.location.hostname.includes('run.app')) {
+                  regs[i].unregister();
+                }
+              }
+            }).catch(function() {});
           }
-        }, true);
+        } catch (e) {}
+
+        // Global manual cache purge helper accessible by user button
+        window.__bancaGeekForceReload = function() {
+          try {
+            localStorage.removeItem('banca_geek_synced_comics_v3');
+            localStorage.removeItem('banca_geek_synced_comics');
+            localStorage.removeItem('banca_geek_persistent_db_v5');
+            sessionStorage.clear();
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                return Promise.all(names.map(function(n) { return caches.delete(n); }));
+              }).catch(function() {});
+            }
+          } catch (e) {}
+          window.location.href = window.location.origin + window.location.pathname + '?reload=' + Date.now();
+        };
+
+        // Suppress benign iframe HMR connection logs while alerting on fatal module errors
         window.addEventListener('error', function(e) {
-          var msg = e ? (e.message || '') : '';
-          var filename = e ? (e.filename || '') : '';
-          var stack = e && e.error ? (e.error.stack || '') : '';
-          if (shouldSuppress(msg, stack, filename)) {
+          var str = (String(e.message || '') + ' ' + String(e.filename || '')).toLowerCase();
+          if (str.includes('websocket') || str.includes('@vite/client') || str.includes('without opened') || str.includes('connection closed')) {
             e.preventDefault();
-            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+            return;
+          }
+          var statusEl = document.getElementById('bg-loading-status');
+          var recoveryEl = document.getElementById('bg-recovery-action');
+          if (statusEl && !window.__bancaGeekMounted) {
+            statusEl.innerText = 'Detectada lentidão no carregamento local. Pronto para reiniciar.';
+            if (recoveryEl) recoveryEl.style.display = 'block';
           }
         }, true);
       })();
@@ -51,14 +71,41 @@
     <div id="root">
       <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #12121F; color: #F4EBD8; font-family: 'Manrope', system-ui, sans-serif; text-align: center; padding: 24px;">
         <div style="width: 48px; height: 48px; border: 4px solid #FFC531; border-top-color: transparent; border-radius: 50%; animation: bgSpin 0.75s linear infinite; margin-bottom: 18px;"></div>
-        <div style="font-size: 22px; font-weight: 900; letter-spacing: 2px; color: #FFC531; text-transform: uppercase;">BANCA GEEK</div>
-        <div style="font-size: 13px; color: #8A8CA5; margin-top: 6px; letter-spacing: 0.5px;">Carregando acervo e conectando ao Supabase Storage...</div>
+        <div style="font-size: 24px; font-weight: 900; letter-spacing: 2px; color: #FFC531; text-transform: uppercase; font-family: 'Anton', Impact, sans-serif;">BANCA GEEK</div>
+        <div id="bg-loading-status" style="font-size: 13px; color: #8A8CA5; margin-top: 8px; letter-spacing: 0.5px;">Carregando acervo e organizando sua estante...</div>
+
+        <!-- Automatic watchdog fallback if module parsing takes longer than expected -->
+        <div id="bg-recovery-action" style="display: none; margin-top: 24px; animation: bgFadeIn 0.3s ease-out;">
+          <p style="font-size: 12px; color: #8A8CA5; margin-bottom: 12px; max-width: 320px; line-height: 1.5;">
+            Se o acervo não abrir automaticamente em instantes, clique abaixo para limpar o cache do navegador e reiniciar.
+          </p>
+          <button
+            onclick="window.__bancaGeekForceReload()"
+            style="padding: 10px 20px; background-color: #FFC531; color: #12121F; font-size: 12px; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-family: 'Anton', Impact, sans-serif; box-shadow: 0 4px 12px rgba(255, 197, 49, 0.3);"
+          >
+            Reiniciar e Limpar Cache
+          </button>
+        </div>
       </div>
       <style>
         @keyframes bgSpin { to { transform: rotate(360deg); } }
+        @keyframes bgFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
       </style>
     </div>
+
+    <script>
+      // Startup watchdog: if React hasn't mounted after 3.2 seconds, reveal manual recovery button
+      window.__bancaGeekMounted = false;
+      setTimeout(function() {
+        if (!window.__bancaGeekMounted) {
+          var rec = document.getElementById('bg-recovery-action');
+          if (rec) rec.style.display = 'block';
+        }
+      }, 3200);
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
+
     <script>
       // Clean up any stale service workers in development/preview to prevent caching issues
       if ('serviceWorker' in navigator) {
@@ -75,4 +122,3 @@
     </script>
   </body>
 </html>
-

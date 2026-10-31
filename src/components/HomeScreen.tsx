@@ -185,6 +185,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     [comics]
   );
 
+  const thanosIdSet = useMemo(() => new Set(thanosComics.map((c) => c.id)), [thanosComics]);
+  const cosmicIdSet = useMemo(() => new Set(cosmicSagasComics.map((c) => c.id)), [cosmicSagasComics]);
+  const fugitivesIdSet = useMemo(() => new Set(fugitivesPulseComics.map((c) => c.id)), [fugitivesPulseComics]);
+  const defendersIdSet = useMemo(() => new Set(streetDefendersComics.map((c) => c.id)), [streetDefendersComics]);
+  const heroisIdSet = useMemo(() => new Set(pantherAvengersComics.map((c) => c.id)), [pantherAvengersComics]);
+  const epicosIdSet = useMemo(() => new Set(alexRossNoirComics.map((c) => c.id)), [alexRossNoirComics]);
+
   const categories = [
     { id: 'TODOS', label: `✪ TODOS (${comics.length})` },
     { id: 'EM_ANDAMENTO', label: `📖 Em Leitura (${inProgressComics.length})` },
@@ -233,12 +240,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       if (selectedCategory === 'TODOS') return true;
       if (selectedCategory === 'EM_ANDAMENTO') return progress > 0 && progress < 100;
       if (selectedCategory === 'CONCLUIDOS') return progress >= 100;
-      if (selectedCategory === 'THANOS') return thanosComics.some((c) => c.id === comic.id);
-      if (selectedCategory === 'COSMICOS') return cosmicSagasComics.some((c) => c.id === comic.id);
-      if (selectedCategory === 'FUGITIVOS') return fugitivesPulseComics.some((c) => c.id === comic.id);
-      if (selectedCategory === 'DEFENSORES') return streetDefendersComics.some((c) => c.id === comic.id);
-      if (selectedCategory === 'HEROIS') return pantherAvengersComics.some((c) => c.id === comic.id);
-      if (selectedCategory === 'EPICOS') return alexRossNoirComics.some((c) => c.id === comic.id);
+      if (selectedCategory === 'THANOS') return thanosIdSet.has(comic.id);
+      if (selectedCategory === 'COSMICOS') return cosmicIdSet.has(comic.id);
+      if (selectedCategory === 'FUGITIVOS') return fugitivesIdSet.has(comic.id);
+      if (selectedCategory === 'DEFENSORES') return defendersIdSet.has(comic.id);
+      if (selectedCategory === 'HEROIS') return heroisIdSet.has(comic.id);
+      if (selectedCategory === 'EPICOS') return epicosIdSet.has(comic.id);
 
       return true;
     });
@@ -246,12 +253,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     comics,
     searchQuery,
     selectedCategory,
-    thanosComics,
-    cosmicSagasComics,
-    fugitivesPulseComics,
-    streetDefendersComics,
-    pantherAvengersComics,
-    alexRossNoirComics,
+    thanosIdSet,
+    cosmicIdSet,
+    fugitivesIdSet,
+    defendersIdSet,
+    heroisIdSet,
+    epicosIdSet,
   ]);
 
   const displayedGridComics = useMemo(() => {

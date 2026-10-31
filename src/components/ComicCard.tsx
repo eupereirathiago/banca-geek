@@ -43,18 +43,6 @@ export const ComicCard: React.FC<ComicCardProps> = ({
     setCurrentSrc(resolveInitialCover(comic));
     setHasError(false);
     setIsFullLoaded(false);
-
-    // Load device-cached low quality preview immediately for 0ms visual appearance
-    let isSubscribed = true;
-    getLocalCover(comic.id).then((cached) => {
-      if (isSubscribed && cached) {
-        setLocalLqip(cached);
-      }
-    });
-
-    return () => {
-      isSubscribed = false;
-    };
   }, [comic.id, comic.coverUrl]);
 
   const handleImageError = () => {
@@ -65,7 +53,15 @@ export const ComicCard: React.FC<ComicCardProps> = ({
     } else if (currentSrc.includes('/api/acervo/cover/')) {
       setCurrentSrc(`/api/acervo/cover-art/${comic.id}`);
     } else {
-      setHasError(true);
+      getLocalCover(comic.id).then((cached) => {
+        if (cached) {
+          setLocalLqip(cached);
+        } else {
+          setHasError(true);
+        }
+      }).catch(() => {
+        setHasError(true);
+      });
     }
   };
 
