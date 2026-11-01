@@ -2700,6 +2700,86 @@ app.get('/api/acervo/pdf-view/:comicId', (req, res) => {
   return res.redirect(`https://drive.google.com/file/d/${driveFileId}/preview`);
 });
 
+// Full Comic Archive Direct Stream (CBR / CBZ / PDF / RAR / ZIP) with CORS for In-App Reader
+app.get('/api/acervo/archive-stream/:comicId', async (req, res) => {
+  const { comicId } = req.params;
+  const comic = cachedAcervo.find((c) => c.id === comicId);
+  const mapping = vaultStorageMapping.get(comicId);
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+
+  // 1. PRIORITY 1: Supabase Storage
+  const supaFile = findSupabaseComicFile(comicId, (comic as any)?.rawFileName, comic?.title);
+  if (supaFile) {
+    try {
+      const { data: supaBlob, error } = await supabaseServer.storage
+        .from(SUPABASE_STORAGE_BUCKET)
+        .download(supaFile);
+
+      if (supaBlob && !error) {
+        const arrayBuffer = await supaBlob.arrayBuffer();
+        const ext = path.extname(supaFile).toLowerCase() || '.cbz';
+        const safeTitle = (comic?.title || 'HQ_Marvel').replace(/[^a-zA-Z0-9_\-]/g, '_');
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Content-Disposition', `inline; filename="${safeTitle}${ext}"`);
+        return res.send(Buffer.from(arrayBuffer));
+      }
+    } catch (err: any) {
+      console.warn(`[Archive Stream] Erro Supabase:`, err?.message || err);
+    }
+  }
+
+  // 2. PRIORITY 2: Cached on disk if available
+  const candidateExtensions = ['cbz', 'cbr', 'zip', 'pdf', 'rar', 'epub', 'cb7', 'cbt'];
+  for (const ext of candidateExtensions) {
+    const p = path.join(ARCHIVE_CACHE_DIR, `${comicId}.${ext}`);
+    if (fs.existsSync(p) && fs.statSync(p).size > 1000) {
+      res.setHeader('Content-Type', 'application/octet-stream');
+      return res.sendFile(p);
+    }
+  }
+
+  // 3. PRIORITY 3: Google Drive download
+  const driveFileId = mapping?.zipDriveFileId || mapping?.coverDriveFileId || (comic as any)?.driveFileId;
+  if (!driveFileId) {
+    return res.status(404).json({ error: 'Arquivo da HQ não encontrado' });
+  }
+
+  try {
+    const downloadUrl = `https://drive.usercontent.google.com/download?id=${driveFileId}&export=download&confirm=t`;
+    const resp = await fetch(downloadUrl);
+    if (resp.ok && resp.body) {
+      const arrayBuffer = await resp.arrayBuffer();
+      if (arrayBuffer.byteLength > 1000) {
+        res.setHeader('Content-Type', 'application/octet-stream');
+        return res.send(Buffer.from(arrayBuffer));
+      }
+    }
+  } catch (err: any) {
+    console.warn('[Archive Stream] Erro Google Drive fetch:', err?.message || err);
+  }
+
+  // Fallback to Drive client API
+  const userToken = (req.query.token as string) || req.headers.authorization?.replace(/^Bearer\s+/i, '');
+  const drive = getDriveClient(userToken);
+  if (drive) {
+    try {
+      const driveRes: any = await drive.files.get(
+        { fileId: driveFileId, alt: 'media', supportsAllDrives: true },
+        { responseType: 'arraybuffer' }
+      );
+      if (driveRes?.data) {
+        res.setHeader('Content-Type', 'application/octet-stream');
+        return res.send(Buffer.from(driveRes.data));
+      }
+    } catch (err: any) {}
+  }
+
+  return res.redirect(`https://drive.google.com/file/d/${driveFileId}/preview`);
+});
+
 // 4. Secure Stream Proxy for Single Page Image Bytes (Direct Binary Streaming for .cbr, .cbz, .pdf, .epub, .cb7, .cbt)
 app.get('/api/acervo/page-media/:comicId/:pageNumber', async (req, res) => {
   const { comicId, pageNumber } = req.params;

@@ -29,6 +29,7 @@ import { saveComicProgress, getComicProgress } from '../services/progressService
 import { getAccessToken } from '../services/authService';
 import { ClientComicCover } from './ClientComicCover';
 import { extractComicPagesInBrowser, getCachedComicBlobUrls } from '../services/clientComicReaderService';
+import { loadPdfDocument, renderPdfPageToCanvas } from '../services/pdfReaderService';
 
 interface ActiveReaderScreenProps {
   comic: ComicIssue;
@@ -79,6 +80,19 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
   const [tokenParam, setTokenParam] = useState<string>('');
   const [pageError, setPageError] = useState<boolean>(false);
 
+  // PDF In-App Direct Canvas Reader
+  const isPdfComic = Boolean(
+    comic.isPdf ||
+    comic.format === 'pdf' ||
+    (comic.rawFileName && comic.rawFileName.toLowerCase().endsWith('.pdf')) ||
+    (comic.title && comic.title.toLowerCase().includes('.pdf'))
+  );
+  const [pdfDoc, setPdfDoc] = useState<any>(null);
+  const [pdfLoading, setPdfLoading] = useState<boolean>(false);
+  const [pdfTotalPages, setPdfTotalPages] = useState<number | null>(null);
+  const [pdfRenderError, setPdfRenderError] = useState<boolean>(false);
+  const pdfCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
   useEffect(() => {
     getAccessToken()
       .then((t) => {
@@ -87,19 +101,76 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
       .catch(() => {});
   }, []);
 
+  // Load PDF in memory if format is PDF
   useEffect(() => {
-    if (readerEngine === 'canvas' && !extractedPages) {
+    if (!isPdfComic) return;
+    let active = true;
+    setPdfLoading(true);
+    setPdfRenderError(false);
+
+    const pdfUrl = comic.pdfStreamUrl || `/api/acervo/pdf-stream/${comic.id}`;
+    loadPdfDocument(pdfUrl)
+      .then((res) => {
+        if (!active) return;
+        if (res && res.doc) {
+          setPdfDoc(res.doc);
+          setPdfTotalPages(res.numPages);
+          setPdfLoading(false);
+        } else {
+          setPdfLoading(false);
+          setPdfRenderError(true);
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.warn('[ActiveReader] Falha ao carregar PDF:', err);
+        setPdfLoading(false);
+        setPdfRenderError(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [comic.id, isPdfComic, comic.pdfStreamUrl]);
+
+  // Render current PDF page to canvas
+  useEffect(() => {
+    if (!isPdfComic || !pdfDoc || !pdfCanvasRef.current) return;
+    let active = true;
+    setImageLoaded(false);
+
+    const canvas = pdfCanvasRef.current;
+    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    const scale = Math.min(2.5, Math.max(1.2, dpr * 1.25));
+
+    renderPdfPageToCanvas(pdfDoc, currentPage, canvas, scale).then((success) => {
+      if (!active) return;
+      if (success) {
+        setImageLoaded(true);
+        setPageError(false);
+      } else {
+        setPdfRenderError(true);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [isPdfComic, pdfDoc, currentPage]);
+
+  useEffect(() => {
+    if (readerEngine === 'canvas' && !extractedPages && !isPdfComic) {
       extractComicPagesInBrowser(comic).then((blobs) => {
         if (blobs && blobs.length > 0) {
           setExtractedPages(blobs);
         }
       });
     }
-  }, [comic, readerEngine, extractedPages]);
+  }, [comic, readerEngine, extractedPages, isPdfComic]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const readerStageRef = useRef<HTMLDivElement>(null);
-  const totalPages = Math.max(1, comic.totalPages || 36);
+  const totalPages = Math.max(1, pdfTotalPages || comic.totalPages || 36);
   const progressPercent = Math.min(100, Math.round((currentPage / totalPages) * 100));
   const isCompleted = currentPage >= totalPages;
 
@@ -586,13 +657,28 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                 }`}
               >
                 {!imageLoaded && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#12121f] text-[#8a8ca5] gap-2 z-10">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#12121f] text-[#8a8ca5] gap-2 z-10 pointer-events-none">
                     <span className="animate-spin inline-block w-6 h-6 border-2 border-[#ffc531] border-t-transparent rounded-full" />
-                    <span className="text-[11px] font-anton text-[#ffc531]">CARREGANDO PÁG. {currentPage}...</span>
+                    <span className="text-[11px] font-anton text-[#ffc531]">
+                      {isPdfComic ? `RENDERIZANDO PÁG. ${currentPage}...` : `CARREGANDO PÁG. ${currentPage}...`}
+                    </span>
                   </div>
                 )}
 
-                {!pageError ? (
+                {isPdfComic && !pdfRenderError ? (
+                  <canvas
+                    ref={pdfCanvasRef}
+                    className={`bg-black select-none transition-all ${
+                      fitMode === 'width'
+                        ? 'w-full h-auto object-contain max-w-none'
+                        : fitMode === 'height'
+                        ? 'h-full w-auto object-contain max-h-screen'
+                        : isFullscreen
+                        ? 'w-full h-full max-h-screen max-w-screen object-contain object-center'
+                        : 'w-full h-full object-contain object-center'
+                    }`}
+                  />
+                ) : !isPdfComic && !pageError ? (
                   <img
                     src={currentMediaUrl}
                     alt={`${comic.title} Página ${currentPage}`}
@@ -611,6 +697,31 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                         : 'w-full h-full object-contain object-center'
                     }`}
                   />
+                ) : drivePreviewUrl ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center relative bg-black">
+                    <iframe
+                      src={drivePreviewUrl}
+                      className="w-full h-full border-0 bg-black min-h-[70vh]"
+                      allow="autoplay; fullscreen"
+                      title={comic.title}
+                    />
+                    <div className="absolute top-2 left-2 right-2 flex items-center justify-between bg-[#12121f]/90 backdrop-blur-md px-3 py-1.5 rounded-[4px] border border-[#ffc531]/40 shadow-lg text-[11px]">
+                      <span className="text-[#ffc531] font-semibold flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5" />
+                        Visualizador em Nuvem Google Drive Ativo
+                      </span>
+                      <button
+                        onClick={() => {
+                          setPageError(false);
+                          setPdfRenderError(false);
+                          setImageLoaded(false);
+                        }}
+                        className="px-2 py-0.5 bg-[#1a1a2e] hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] rounded-[2px] font-anton uppercase text-[10px] transition-colors cursor-pointer"
+                      >
+                        Recarregar Páginas
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-[#12121f] text-center select-none">
                     <div className="w-32 aspect-[2/3] mb-3 shadow-2xl rounded-[4px] overflow-hidden border border-[#ffc531]/40">
@@ -620,33 +731,25 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                       Arquivo na Nuvem (Google Drive)
                     </h3>
                     <p className="text-xs text-[#8a8ca5] max-w-sm mb-3.5">
-                      Na Vercel, você pode ler esta edição completa diretamente pelo visualizador do Google Drive ou abri-la em nova aba:
+                      Esta edição pode ser lida pelo visualizador seguro da nuvem:
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-2">
-                      {drivePreviewUrl && (
-                        <button
-                          onClick={() => setReaderEngine('drive')}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold shadow-lg transition-transform hover:scale-105 cursor-pointer"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                          <span>ABRIR VISUALIZADOR DRIVE</span>
-                        </button>
-                      )}
                       {driveDirectUrl && (
                         <a
                           href={driveDirectUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-3 py-2 bg-[#1a1a2e] hover:bg-[#252542] text-[#f4ebd8] border border-[#8a8ca5]/30 font-anton text-xs uppercase tracking-wider rounded-[3px] transition-colors"
+                          className="inline-flex items-center gap-2 px-3 py-2 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold transition-colors"
                         >
-                          <ExternalLink className="w-3.5 h-3.5 text-[#ffc531]" />
-                          <span>Nova Aba</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>Abrir no Google Drive</span>
                         </a>
                       )}
                       <button
                         onClick={() => {
                           setImageLoaded(false);
                           setPageError(false);
+                          setPdfRenderError(false);
                         }}
                         className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#12121f] hover:bg-[#1a1a2e] text-[#8a8ca5] border border-[#8a8ca5]/20 font-anton text-xs uppercase tracking-wider rounded-[3px] transition-colors cursor-pointer"
                       >

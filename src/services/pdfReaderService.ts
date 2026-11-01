@@ -1,11 +1,15 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure the worker for pdfjs in browser
+// Configure the worker for pdfjs in browser with robust CDN fallback
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs`;
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs`;
+  } catch {
+    // Worker initialization fallback
+  }
 }
 
-interface LoadedPdfDoc {
+export interface LoadedPdfDoc {
   doc: any;
   numPages: number;
 }
@@ -22,10 +26,21 @@ export async function loadPdfDocument(sourceUrl: string): Promise<LoadedPdfDoc |
 
   const promise = (async () => {
     try {
+      const resp = await fetch(sourceUrl);
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+      const arrayBuffer = await resp.arrayBuffer();
+      if (!arrayBuffer || arrayBuffer.byteLength < 100) {
+        throw new Error('Arquivo PDF vazio ou inválido recebido');
+      }
+
       const loadingTask = pdfjsLib.getDocument({
-        url: sourceUrl,
-        withCredentials: false,
+        data: new Uint8Array(arrayBuffer),
+        cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/cmaps/',
+        cMapPacked: true,
       });
+
       const doc = await loadingTask.promise;
       return { doc, numPages: doc.numPages };
     } catch (err: any) {
@@ -48,7 +63,9 @@ export async function renderPdfPageToCanvas(
   scale: number = 1.5
 ): Promise<boolean> {
   try {
-    const page = await doc.getPage(pageNumber);
+    if (!doc || !canvas) return false;
+    const boundedPage = Math.max(1, Math.min(pageNumber, doc.numPages));
+    const page = await doc.getPage(boundedPage);
     const viewport = page.getViewport({ scale });
 
     canvas.width = viewport.width;
@@ -56,6 +73,9 @@ export async function renderPdfPageToCanvas(
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return false;
+
+    // Clear previous drawing
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const renderContext = {
       canvasContext: ctx,

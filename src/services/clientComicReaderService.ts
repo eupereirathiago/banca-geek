@@ -38,33 +38,42 @@ export async function extractComicPagesInBrowser(
       }
 
       const isSupabase = Boolean(supaUrl);
-      const downloadUrl =
-        supaUrl ||
-        comic.driveDownloadUrl ||
-        `https://drive.usercontent.google.com/download?id=${driveFileId}&export=download&confirm=t`;
+      const downloadCandidates = [
+        `/api/acervo/archive-stream/${comic.id}`,
+        supaUrl,
+        comic.driveDownloadUrl,
+        driveFileId ? `https://drive.usercontent.google.com/download?id=${driveFileId}&export=download&confirm=t` : null,
+      ].filter(Boolean) as string[];
 
-      if (onProgress) {
-        onProgress({
-          status: 'downloading',
-          progressPercent: 15,
-          message: isSupabase
-            ? 'Carregando arquivo da Nuvem Supabase Storage...'
-            : 'Carregando arquivo do Google Drive...',
-        });
+      let arrayBuffer: ArrayBuffer | null = null;
+      for (const downloadUrl of downloadCandidates) {
+        try {
+          if (onProgress) {
+            onProgress({
+              status: 'downloading',
+              progressPercent: 25,
+              message: 'Carregando arquivo da edição...',
+            });
+          }
+          const res = await fetch(downloadUrl);
+          if (res.ok) {
+            const buf = await res.arrayBuffer();
+            if (buf && buf.byteLength > 100) {
+              arrayBuffer = buf;
+              break;
+            }
+          }
+        } catch {
+          // Try next candidate
+        }
       }
 
-      const res = await fetch(downloadUrl, { mode: 'cors' });
-      if (!res.ok) {
-        throw new Error(`Falha no download: status ${res.status}`);
+      if (!arrayBuffer || arrayBuffer.byteLength < 100) {
+        return null;
       }
 
       if (onProgress) {
         onProgress({ status: 'extracting', progressPercent: 65, message: 'Descompactando páginas da HQ...' });
-      }
-
-      const arrayBuffer = await res.arrayBuffer();
-      if (!arrayBuffer || arrayBuffer.byteLength < 100) {
-        throw new Error('Arquivo vazio ou inválido recebido do Drive');
       }
 
       // Try Unzipping with JSZip (Works for all .cbz and .zip)
