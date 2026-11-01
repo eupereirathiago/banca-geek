@@ -108,30 +108,38 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
     setPdfLoading(true);
     setPdfRenderError(false);
 
-    const pdfUrl = comic.pdfStreamUrl || `/api/acervo/pdf-stream/${comic.id}`;
-    loadPdfDocument(pdfUrl)
-      .then((res) => {
-        if (!active) return;
-        if (res && res.doc) {
-          setPdfDoc(res.doc);
-          setPdfTotalPages(res.numPages);
-          setPdfLoading(false);
-        } else {
-          setPdfLoading(false);
-          setPdfRenderError(true);
-        }
-      })
-      .catch((err) => {
-        if (!active) return;
-        console.warn('[ActiveReader] Falha ao carregar PDF:', err);
+    const supaUrl = (comic as any).supabasePublicUrl;
+    const candidateUrls = [
+      supaUrl,
+      comic.pdfStreamUrl,
+      `/api/acervo/pdf-stream/${comic.id}`,
+    ].filter(Boolean) as string[];
+
+    const loadCandidates = async () => {
+      for (const pdfUrl of candidateUrls) {
+        try {
+          const res = await loadPdfDocument(pdfUrl);
+          if (!active) return;
+          if (res && res.doc) {
+            setPdfDoc(res.doc);
+            setPdfTotalPages(res.numPages);
+            setPdfLoading(false);
+            return;
+          }
+        } catch {}
+      }
+      if (active) {
         setPdfLoading(false);
         setPdfRenderError(true);
-      });
+      }
+    };
+
+    loadCandidates();
 
     return () => {
       active = false;
     };
-  }, [comic.id, isPdfComic, comic.pdfStreamUrl]);
+  }, [comic.id, isPdfComic, comic.pdfStreamUrl, (comic as any).supabasePublicUrl]);
 
   // Render current PDF page to canvas
   useEffect(() => {
@@ -728,13 +736,27 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                       <ClientComicCover comic={comic} />
                     </div>
                     <h3 className="font-anton text-sm sm:text-base text-[#f4ebd8] uppercase tracking-wide mb-1">
-                      Arquivo na Nuvem (Google Drive)
+                      {(comic as any).storageSource === 'supabase' || (comic as any)?.supabaseFileName
+                        ? 'Arquivo na Nuvem (Supabase Storage)'
+                        : 'Arquivo na Nuvem'}
                     </h3>
                     <p className="text-xs text-[#8a8ca5] max-w-sm mb-3.5">
-                      Esta edição pode ser lida pelo visualizador seguro da nuvem:
+                      {(comic as any).storageSource === 'supabase' || (comic as any)?.supabaseFileName
+                        ? 'Esta edição está preservada diretamente no bucket Supabase Storage:'
+                        : 'Esta edição pode ser lida pelo visualizador seguro da nuvem:'}
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-2">
-                      {driveDirectUrl && (
+                      {(comic as any)?.supabasePublicUrl ? (
+                        <a
+                          href={(comic as any).supabasePublicUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-3 py-2 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold transition-colors"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>Abrir no Supabase Storage</span>
+                        </a>
+                      ) : driveDirectUrl ? (
                         <a
                           href={driveDirectUrl}
                           target="_blank"
@@ -742,9 +764,9 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                           className="inline-flex items-center gap-2 px-3 py-2 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold transition-colors"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Abrir no Google Drive</span>
+                          <span>Abrir na Nuvem</span>
                         </a>
-                      )}
+                      ) : null}
                       <button
                         onClick={() => {
                           setImageLoaded(false);

@@ -7,7 +7,9 @@ export const SUPABASE_URL =
   import.meta.env?.VITE_SUPABASE_URL || 'https://urnxozvpirwotccsxwgu.supabase.co';
 
 export const SUPABASE_ANON_KEY =
-  import.meta.env?.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.dummy_fallback_key';
+  (import.meta.env?.VITE_SUPABASE_ANON_KEY && !import.meta.env.VITE_SUPABASE_ANON_KEY.includes('dummy')
+    ? import.meta.env.VITE_SUPABASE_ANON_KEY
+    : (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY ? process.env.VITE_SUPABASE_ANON_KEY : ''));
 
 export const SUPABASE_STORAGE_BUCKET =
   import.meta.env?.VITE_SUPABASE_BUCKET || 'comics';
@@ -89,13 +91,11 @@ export function isSupabaseKeyValid(key?: string): boolean {
     trimmed === 'none' ||
     trimmed.includes('dummy') ||
     trimmed.includes('fallback') ||
-    trimmed.includes('your-supabase') ||
-    trimmed.length < 50
+    trimmed.includes('your-supabase')
   ) {
     return false;
   }
-  const parts = trimmed.split('.');
-  return parts.length === 3 && parts[2].length > 10;
+  return trimmed.startsWith('sb_') || (trimmed.startsWith('ey') && trimmed.length > 20);
 }
 
 export const IS_SUPABASE_CONFIGURED = isSupabaseKeyValid(SUPABASE_ANON_KEY);

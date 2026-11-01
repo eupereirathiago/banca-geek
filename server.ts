@@ -20,7 +20,11 @@ import nodeCrypto from 'crypto';
 // SUPABASE STORAGE & DATABASE INTEGRATION ('comics' & 'comic-covers' buckets)
 // ----------------------------------------------------
 function isSupabaseConfigured(): boolean {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    '';
   if (!key || typeof key !== 'string') return false;
   const trimmed = key.trim();
   if (
@@ -28,21 +32,26 @@ function isSupabaseConfigured(): boolean {
     trimmed === 'none' ||
     trimmed.includes('dummy') ||
     trimmed.includes('fallback') ||
-    trimmed.includes('your-supabase') ||
-    trimmed.length < 50
+    trimmed.includes('your-supabase')
   ) {
     return false;
   }
-  const parts = trimmed.split('.');
-  return parts.length === 3 && parts[2].length > 10;
+  return trimmed.startsWith('sb_') || (trimmed.startsWith('ey') && trimmed.length > 20);
 }
 
-const IS_SUPABASE_READY = isSupabaseConfigured();
+const IS_SUPABASE_READY = true;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://urnxozvpirwotccsxwgu.supabase.co';
 const SUPABASE_SERVICE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.dummy_fallback_key';
+  (process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY.includes('dummy')
+    ? process.env.SUPABASE_SERVICE_ROLE_KEY
+    : null) ||
+  (process.env.SUPABASE_ANON_KEY && !process.env.SUPABASE_ANON_KEY.includes('dummy')
+    ? process.env.SUPABASE_ANON_KEY
+    : null) ||
+  (process.env.VITE_SUPABASE_ANON_KEY && !process.env.VITE_SUPABASE_ANON_KEY.includes('dummy')
+    ? process.env.VITE_SUPABASE_ANON_KEY
+    : null) ||
+  '';
 const SUPABASE_STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'comics';
 const SUPABASE_COVERS_BUCKET = process.env.SUPABASE_COVERS_BUCKET || 'comic-covers';
 const SUPABASE_PROJECT_ID = 'urnxozvpirwotccsxwgu';
@@ -89,6 +98,22 @@ try {
   console.warn('[Server] Could not pre-parse supabaseCoverMap.json:', e);
 }
 
+let supabaseComicsCatalog: any = null;
+try {
+  const catCandidates = [
+    path.resolve(__dirname, 'src/data/supabaseComicsCatalog.json'),
+    path.resolve(process.cwd(), 'src/data/supabaseComicsCatalog.json'),
+  ];
+  for (const cp of catCandidates) {
+    if (fs.existsSync(cp)) {
+      supabaseComicsCatalog = JSON.parse(fs.readFileSync(cp, 'utf8'));
+      break;
+    }
+  }
+} catch (e) {
+  console.warn('[Server] Could not pre-parse supabaseComicsCatalog.json:', e);
+}
+
 // ----------------------------------------------------
 // SUPABASE STORAGE COMICS INDEX (Zero Google Drive for files in Supabase)
 // ----------------------------------------------------
@@ -108,6 +133,17 @@ let supabaseComicsFilesList: string[] = [];
 const supabaseComicsFilesSet = new Set<string>();
 const supabaseComicsCleanMap = new Map<string, string>();
 let lastSupabaseComicsIndexTime = 0;
+
+if (supabaseComicsCatalog?.filesList) {
+  supabaseComicsFilesList = supabaseComicsCatalog.filesList;
+  for (const fileName of supabaseComicsCatalog.filesList) {
+    supabaseComicsFilesSet.add(fileName);
+    const base = fileName.replace(/\.[a-z0-9]+$/i, '');
+    const clean = cleanPt(base);
+    supabaseComicsCleanMap.set(clean, fileName);
+  }
+  console.log(`[Supabase Storage] ${supabaseComicsFilesSet.size} arquivos de HQs pré-carregados do catálogo estático.`);
+}
 
 async function indexSupabaseComicsFiles(force: boolean = false): Promise<number> {
   if (!IS_SUPABASE_READY) {
@@ -157,7 +193,7 @@ async function indexSupabaseComicsFiles(force: boolean = false): Promise<number>
 function findSupabaseComicFile(comicId: string, rawFileName?: string, title?: string): string | null {
   const comic = cachedAcervo.find((c) => c.id === comicId);
   // 1. Explicitly mapped supabaseFileName
-  if ((comic as any)?.supabaseFileName && supabaseComicsFilesSet.has((comic as any).supabaseFileName)) {
+  if ((comic as any)?.supabaseFileName) {
     return (comic as any).supabaseFileName;
   }
 
@@ -1019,6 +1055,66 @@ try {
   }
 } catch (err: any) {
   console.warn('[Secure Gateway] Aviso ao carregar repoEditions pré-carregado:', err?.message || err);
+}
+
+if (Array.isArray(supabaseComicsCatalog?.editions) && supabaseComicsCatalog.editions.length > 0) {
+  let linked = 0;
+  let added = 0;
+
+  // Build O(1) lookup maps from cachedAcervo
+  const existingBySupabaseName = new Map<string, AcervoEdition>();
+  const existingByCleanRaw = new Map<string, AcervoEdition>();
+  const existingByCleanTitle = new Map<string, AcervoEdition>();
+
+  for (const c of cachedAcervo) {
+    if ((c as any).supabaseFileName) {
+      existingBySupabaseName.set((c as any).supabaseFileName, c);
+    }
+    const raw = ((c as any).rawFileName || '').replace(/\.[a-z0-9]+$/i, '');
+    if (raw) existingByCleanRaw.set(cleanPt(raw), c);
+    if (c.title) existingByCleanTitle.set(cleanPt(c.title), c);
+  }
+
+  for (const sbEd of supabaseComicsCatalog.editions) {
+    const sbRaw = (sbEd.rawFileName || '').replace(/\.[a-z0-9]+$/i, '');
+    const cleanSbRaw = cleanPt(sbRaw);
+    const cleanSbTitle = cleanPt(sbEd.title || '');
+
+    const existing =
+      existingBySupabaseName.get(sbEd.supabaseFileName) ||
+      existingByCleanRaw.get(cleanSbRaw) ||
+      existingByCleanTitle.get(cleanSbTitle);
+
+    if (existing) {
+      (existing as any).supabaseFileName = sbEd.supabaseFileName;
+      (existing as any).supabasePublicUrl = sbEd.supabasePublicUrl;
+      (existing as any).storageSource = 'supabase';
+      (existing as any).pdfStreamUrl = `/api/acervo/pdf-stream/${existing.id}`;
+      (existing as any).isPdf = true;
+      (existing as any).format = 'pdf';
+      linked++;
+      vaultStorageMapping.set(existing.id, {
+        comicId: existing.id,
+        coverDriveFileId: '',
+        zipDriveFileId: '',
+        isFromSupabase: true,
+        supabaseFileName: sbEd.supabaseFileName,
+        pages: [],
+      } as any);
+    } else {
+      cachedAcervo.unshift(sbEd as AcervoEdition);
+      added++;
+      vaultStorageMapping.set(sbEd.id, {
+        comicId: sbEd.id,
+        coverDriveFileId: '',
+        zipDriveFileId: '',
+        isFromSupabase: true,
+        supabaseFileName: sbEd.supabaseFileName,
+        pages: [],
+      } as any);
+    }
+  }
+  console.log(`[Supabase Catalog] ${supabaseComicsCatalog.editions.length} edições processadas (${linked} vinculadas, ${added} novas edições do Supabase). Total catálogo: ${cachedAcervo.length}`);
 }
 
 function syncDatabaseCustomComicsWithAcervo() {
@@ -2634,6 +2730,18 @@ app.get('/api/acervo/pdf-stream/:comicId', async (req, res) => {
   if (supaFile) {
     try {
       console.log(`[Supabase PDF Stream] Servindo "${supaFile}" diretamente do Supabase Storage...`);
+      const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/${encodeURIComponent(supaFile)}`;
+      const pubResp = await fetch(publicUrl);
+      if (pubResp.ok && pubResp.body) {
+        const arrayBuffer = await pubResp.arrayBuffer();
+        const safeTitle = (comic?.title || 'HQ_Marvel').replace(/[^a-zA-Z0-9_\-]/g, '_');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${safeTitle}.pdf"`);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.send(Buffer.from(arrayBuffer));
+      }
+
       const { data: supaBlob, error } = await supabaseServer.storage
         .from(SUPABASE_STORAGE_BUCKET)
         .download(supaFile);
@@ -2643,6 +2751,7 @@ app.get('/api/acervo/pdf-stream/:comicId', async (req, res) => {
         const safeTitle = (comic?.title || 'HQ_Marvel').replace(/[^a-zA-Z0-9_\-]/g, '_');
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="${safeTitle}.pdf"`);
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Cache-Control', 'public, max-age=86400');
         return res.send(Buffer.from(arrayBuffer));
       }
@@ -2714,13 +2823,24 @@ app.get('/api/acervo/archive-stream/:comicId', async (req, res) => {
   const supaFile = findSupabaseComicFile(comicId, (comic as any)?.rawFileName, comic?.title);
   if (supaFile) {
     try {
+      const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/${encodeURIComponent(supaFile)}`;
+      const pubResp = await fetch(publicUrl);
+      if (pubResp.ok && pubResp.body) {
+        const arrayBuffer = await pubResp.arrayBuffer();
+        const ext = path.extname(supaFile).toLowerCase() || '.pdf';
+        const safeTitle = (comic?.title || 'HQ_Marvel').replace(/[^a-zA-Z0-9_\-]/g, '_');
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Content-Disposition', `inline; filename="${safeTitle}${ext}"`);
+        return res.send(Buffer.from(arrayBuffer));
+      }
+
       const { data: supaBlob, error } = await supabaseServer.storage
         .from(SUPABASE_STORAGE_BUCKET)
         .download(supaFile);
 
       if (supaBlob && !error) {
         const arrayBuffer = await supaBlob.arrayBuffer();
-        const ext = path.extname(supaFile).toLowerCase() || '.cbz';
+        const ext = path.extname(supaFile).toLowerCase() || '.pdf';
         const safeTitle = (comic?.title || 'HQ_Marvel').replace(/[^a-zA-Z0-9_\-]/g, '_');
         res.setHeader('Content-Type', 'application/octet-stream');
         res.setHeader('Content-Disposition', `inline; filename="${safeTitle}${ext}"`);

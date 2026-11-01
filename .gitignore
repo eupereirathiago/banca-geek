@@ -1,6 +1,7 @@
 node_modules/
 build/
 dist/
+dist-ssr/
 coverage/
 .DS_Store
 *.log
@@ -11,5 +12,14 @@ data/covers/
 public/covers/*
 !public/covers/.gitkeep
 public/assets/aistudio/
+archive_cache/
+.cache/
+*.cbr
+*.cbz
+*.pdf
+*.zip
+*.rar
+*.tar
 *.tmp*
 .vercel/
+
