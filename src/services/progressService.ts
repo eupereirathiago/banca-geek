@@ -5,6 +5,7 @@
  */
 
 import { getActiveUsername, syncActiveUserProgress } from './userAccountService';
+import { recordReadingProgress } from './databaseService';
 
 export interface ReadingProgressRecord {
   comicId: string;
@@ -73,9 +74,7 @@ export function saveComicProgress(
 
   // Also persist to server database & activity timeline
   try {
-    import('./databaseService').then((db) => {
-      db.recordReadingProgress(comicId, safePage, safeTotal, comicTitle);
-    });
+    recordReadingProgress(comicId, safePage, safeTotal, comicTitle);
   } catch {}
 
   // Update user profile reading milestone

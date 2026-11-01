@@ -1,4 +1,5 @@
 import { UserProfile, ReadingMilestone } from '../types/comic';
+import { pushCloudProfile } from './cloudSyncService';
 
 const PROFILE_STORAGE_KEY = 'banca_geek_user_profile';
 
@@ -203,9 +204,7 @@ export function createInitialProfile(input: {
   } catch {}
 
   // Asynchronously push to database
-  import('./cloudSyncService').then(({ pushCloudProfile }) => {
-    pushCloudProfile(profile).catch(() => {});
-  }).catch(() => {});
+  pushCloudProfile(profile).catch(() => {});
 
   return profile;
 }
@@ -231,9 +230,7 @@ export function updateStoredProfile(updated: Partial<UserProfile>): UserProfile 
   } catch {}
 
   // Asynchronously push to database
-  import('./cloudSyncService').then(({ pushCloudProfile }) => {
-    pushCloudProfile(merged).catch(() => {});
-  }).catch(() => {});
+  pushCloudProfile(merged).catch(() => {});
 
   return merged;
 }
