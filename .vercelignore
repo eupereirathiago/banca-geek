@@ -2,6 +2,5 @@
 scripts/
 test-drive.js
 data/covers/
-.git/
 .env.local
 .DS_Store
