@@ -19,8 +19,46 @@ export const USER_PROFILE = {
   offlineExpiryDays: 30,
 };
 
-// Autêntico acervo indexado diretamente da nova pasta do Google Drive (1.269 edições reais com capas e PDFs)
-export const COMICS_DATABASE: ComicIssue[] = REPOSITORY_COMICS;
+import supabaseComicsCatalog from './supabaseComicsCatalog.json';
+import { getComicSupabaseFileUrl } from '../lib/supabase';
+
+// Base oficial de 948 edições reais hospedadas diretamente no Supabase Storage ('comics' bucket)
+const primarySupabaseEditions: ComicIssue[] = ((supabaseComicsCatalog as any).editions || []).map((e: any) => ({
+  ...e,
+  storageSource: 'supabase',
+  isPdf: true,
+  format: 'pdf',
+}));
+
+const knownIds = new Set(primarySupabaseEditions.map((e) => e.id));
+const knownTitles = new Set(
+  primarySupabaseEditions.map((e) => e.title.toLowerCase().replace(/[^a-z0-9]/g, ''))
+);
+
+// Sanitiza edições legadas removendo qualquer visualizador do Google Drive e associando ao Supabase
+const sanitizedRepositoryComics: ComicIssue[] = REPOSITORY_COMICS.filter((c) => {
+  const cleanTitle = c.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return !knownIds.has(c.id) && !knownTitles.has(cleanTitle);
+}).map((c) => {
+  const sanitized: ComicIssue = { ...c };
+  // Remove todas as dependências de visualizadores externos do Drive
+  delete sanitized.drivePreviewUrl;
+  delete sanitized.driveDownloadUrl;
+  const supaUrl = getComicSupabaseFileUrl(sanitized);
+  if (supaUrl) {
+    (sanitized as any).supabasePublicUrl = supaUrl;
+    (sanitized as any).storageSource = 'supabase';
+    sanitized.isPdf = true;
+    sanitized.format = 'pdf';
+  }
+  return sanitized;
+});
+
+// Acervo unificado com prioridade absoluta para o Supabase Storage
+export const COMICS_DATABASE: ComicIssue[] = [
+  ...primarySupabaseEditions,
+  ...sanitizedRepositoryComics,
+];
 export const SAGAS_DATABASE: Saga[] = REPOSITORY_SAGAS;
 
 export const CHARACTER_HIGHLIGHTS: CharacterHighlight[] = [

@@ -22,6 +22,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { ClientComicCover } from './ClientComicCover';
+import { getComicSupabaseFileUrl } from '../lib/supabase';
 import {
   requestAiSynopsis,
   getCachedAiSynopsis,
@@ -396,17 +397,21 @@ export const IssueDetailsScreen: React.FC<IssueDetailsScreenProps> = ({
           : `LER HQ AGORA (PÁG. ${comic.currentPage || 1} DE ${comic.totalPages})`}
       </button>
 
-      {comic.driveFileId && (
-        <a
-          href={comic.drivePreviewUrl ? comic.drivePreviewUrl.replace('/preview', '/view') : `https://drive.google.com/file/d/${comic.driveFileId}/view`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full flex items-center justify-center gap-2 py-2 bg-[#1a1a2e] hover:bg-[#22223b] text-[#ffc531] border border-[#ffc531]/40 hover:border-[#ffc531] rounded-[4px] text-xs font-anton tracking-wider uppercase transition-all mb-3 cursor-pointer shadow-xs"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          <span>ABRIR ARQUIVO DIRETO NO GOOGLE DRIVE</span>
-        </a>
-      )}
+      {(() => {
+        const supaUrl = (comic as any).supabasePublicUrl || getComicSupabaseFileUrl(comic);
+        if (!supaUrl) return null;
+        return (
+          <a
+            href={supaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-2 py-2 bg-[#1a1a2e] hover:bg-[#22223b] text-[#ffc531] border border-[#ffc531]/40 hover:border-[#ffc531] rounded-[4px] text-xs font-anton tracking-wider uppercase transition-all mb-3 cursor-pointer shadow-xs"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>ARQUIVO PRESERVADO NO SUPABASE (.PDF)</span>
+          </a>
+        );
+      })()}
 
       {/* Secondary Actions: Favoritos & Na Coleção (Zero downloads, auto-salvo) */}
       <div className="grid grid-cols-2 gap-2.5 mb-4">

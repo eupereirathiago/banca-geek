@@ -1,6 +1,22 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 import supabaseCoverMap from '../data/supabaseCoverMap.json';
+import supabaseComicsCatalog from '../data/supabaseComicsCatalog.json';
+
+const cleanSupabaseFileMap: Map<string, string> = (() => {
+  const map = new Map<string, string>();
+  const files: string[] = (supabaseComicsCatalog as any)?.filesList || [];
+  for (const f of files) {
+    const clean = f
+      .toLowerCase()
+      .replace(/\.[a-z0-9]+$/i, '')
+      .replace(/[^a-z0-9]/g, '');
+    if (clean && !map.has(clean)) {
+      map.set(clean, f);
+    }
+  }
+  return map;
+})();
 
 // Supabase Project Configurations provided for Banca Geek
 export const SUPABASE_URL =
@@ -291,6 +307,48 @@ export function getComicCoverFromSupabase(
     if (cleanNameMap[titleClean]) {
       return getSupabaseCoverPublicUrl(cleanNameMap[titleClean]);
     }
+  }
+
+  return null;
+}
+
+/**
+ * Resolves the direct public URL for any comic file from Supabase 'comics' bucket.
+ * Matches by explicit URL, fileName, rawFileName, or title in pre-indexed Supabase storage.
+ */
+export function getComicSupabaseFileUrl(comic: any): string | null {
+  if (!comic) return null;
+
+  // 1. Explicit Supabase Public URL
+  if (
+    comic.supabasePublicUrl &&
+    typeof comic.supabasePublicUrl === 'string' &&
+    comic.supabasePublicUrl.includes('supabase.co')
+  ) {
+    return comic.supabasePublicUrl;
+  }
+
+  // 2. Explicit Supabase File Name
+  if (comic.supabaseFileName && typeof comic.supabaseFileName === 'string') {
+    return getSupabaseStoragePublicUrl(comic.supabaseFileName);
+  }
+
+  // 3. Match against clean file map of indexed Supabase files
+  const candidates = [comic.rawFileName, comic.title, comic.id].filter(Boolean);
+  for (const candidate of candidates) {
+    const clean = String(candidate)
+      .toLowerCase()
+      .replace(/\.[a-z0-9]+$/i, '')
+      .replace(/[^a-z0-9]/g, '');
+    const matched = cleanSupabaseFileMap.get(clean);
+    if (matched) {
+      return getSupabaseStoragePublicUrl(matched);
+    }
+  }
+
+  // 4. Fallback: if rawFileName is present, build direct storage public URL
+  if (comic.rawFileName && typeof comic.rawFileName === 'string') {
+    return getSupabaseStoragePublicUrl(comic.rawFileName);
   }
 
   return null;

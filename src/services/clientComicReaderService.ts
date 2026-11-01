@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { ComicIssue } from '../types/comic';
+import { getComicSupabaseFileUrl } from '../lib/supabase';
 
 // In-memory cache of extracted page blob URLs per comic ID
 const extractedBlobCache = new Map<string, string[]>();
@@ -31,18 +32,14 @@ export async function extractComicPagesInBrowser(
 
   const promise = (async () => {
     try {
-      const driveFileId = comic.driveFileId;
-      const supaUrl = (comic as any).supabasePublicUrl;
-      if (!supaUrl && !driveFileId && !comic.driveDownloadUrl) {
-        return null;
-      }
+      const supaUrl =
+        (comic as any).supabasePublicUrl ||
+        getComicSupabaseFileUrl(comic);
 
-      const isSupabase = Boolean(supaUrl);
       const downloadCandidates = [
-        `/api/acervo/archive-stream/${comic.id}`,
         supaUrl,
-        comic.driveDownloadUrl,
-        driveFileId ? `https://drive.usercontent.google.com/download?id=${driveFileId}&export=download&confirm=t` : null,
+        (comic as any).pdfStreamUrl,
+        `/api/acervo/archive-stream/${comic.id}`,
       ].filter(Boolean) as string[];
 
       let arrayBuffer: ArrayBuffer | null = null;

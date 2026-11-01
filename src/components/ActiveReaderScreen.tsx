@@ -30,6 +30,7 @@ import { getAccessToken } from '../services/authService';
 import { ClientComicCover } from './ClientComicCover';
 import { extractComicPagesInBrowser, getCachedComicBlobUrls } from '../services/clientComicReaderService';
 import { loadPdfDocument, renderPdfPageToCanvas } from '../services/pdfReaderService';
+import { getComicSupabaseFileUrl } from '../lib/supabase';
 
 interface ActiveReaderScreenProps {
   comic: ComicIssue;
@@ -55,13 +56,12 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
   const startPage = initialPage || savedRecord?.currentPage || comic.currentPage || 1;
 
   const [currentPage, setCurrentPage] = useState<number>(startPage);
-  // Default to native internal reader canvas for all formats (.cbr, .cbz, .pdf, .epub, .cb7, .cbt)
-  const [readerEngine, setReaderEngine] = useState<'canvas' | 'drive'>('canvas');
   const [extractedPages, setExtractedPages] = useState<string[] | null>(() => getCachedComicBlobUrls(comic.id));
   const [viewMode, setViewMode] = useState<ViewMode>('single');
 
-  const drivePreviewUrl = comic.drivePreviewUrl || (comic.driveFileId ? `https://drive.google.com/file/d/${comic.driveFileId}/preview` : null);
-  const driveDirectUrl = comic.driveFileId ? `https://drive.google.com/file/d/${comic.driveFileId}/view` : null;
+  // Supabase Direct Storage Resolver
+  const resolvedSupabaseUrl = (comic as any).supabasePublicUrl || getComicSupabaseFileUrl(comic);
+
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
@@ -84,6 +84,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
   const isPdfComic = Boolean(
     comic.isPdf ||
     comic.format === 'pdf' ||
+    (resolvedSupabaseUrl && resolvedSupabaseUrl.toLowerCase().includes('.pdf')) ||
     (comic.rawFileName && comic.rawFileName.toLowerCase().endsWith('.pdf')) ||
     (comic.title && comic.title.toLowerCase().includes('.pdf'))
   );
@@ -101,16 +102,16 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
       .catch(() => {});
   }, []);
 
-  // Load PDF in memory if format is PDF
+  // Load PDF directly from Supabase Storage into native browser canvas
   useEffect(() => {
     if (!isPdfComic) return;
     let active = true;
     setPdfLoading(true);
     setPdfRenderError(false);
 
-    const supaUrl = (comic as any).supabasePublicUrl;
     const candidateUrls = [
-      supaUrl,
+      resolvedSupabaseUrl,
+      (comic as any).supabasePublicUrl,
       comic.pdfStreamUrl,
       `/api/acervo/pdf-stream/${comic.id}`,
     ].filter(Boolean) as string[];
@@ -124,6 +125,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
             setPdfDoc(res.doc);
             setPdfTotalPages(res.numPages);
             setPdfLoading(false);
+            setPdfRenderError(false);
             return;
           }
         } catch {}
@@ -139,7 +141,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
     return () => {
       active = false;
     };
-  }, [comic.id, isPdfComic, comic.pdfStreamUrl, (comic as any).supabasePublicUrl]);
+  }, [comic.id, isPdfComic, resolvedSupabaseUrl, comic.pdfStreamUrl, (comic as any).supabasePublicUrl]);
 
   // Render current PDF page to canvas
   useEffect(() => {
@@ -167,14 +169,14 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
   }, [isPdfComic, pdfDoc, currentPage]);
 
   useEffect(() => {
-    if (readerEngine === 'canvas' && !extractedPages && !isPdfComic) {
+    if (!extractedPages && !isPdfComic) {
       extractComicPagesInBrowser(comic).then((blobs) => {
         if (blobs && blobs.length > 0) {
           setExtractedPages(blobs);
         }
       });
     }
-  }, [comic, readerEngine, extractedPages, isPdfComic]);
+  }, [comic, extractedPages, isPdfComic]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const readerStageRef = useRef<HTMLDivElement>(null);
@@ -419,27 +421,6 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
               <Bookmark className={`w-5 h-5 ${comic.isBookmarked ? 'fill-[#ffc531] text-[#ffc531]' : ''}`} />
             </button>
 
-            {drivePreviewUrl && (
-              <button
-                onClick={() => {
-                  const nextEngine = readerEngine === 'canvas' ? 'drive' : 'canvas';
-                  setReaderEngine(nextEngine);
-                  triggerToast(nextEngine === 'drive' ? 'Visualizador Google Drive ativado' : 'Leitor nativo de páginas ativado');
-                }}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-anton tracking-wider uppercase transition-all cursor-pointer shadow-xs border ${
-                  readerEngine === 'drive'
-                    ? 'bg-[#ffc531] text-[#12121f] border-[#ffc531]'
-                    : 'bg-[#1a1a2e] hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] border-[#ffc531]/40'
-                }`}
-                title="Alternar entre leitor nativo de páginas e leitor em nuvem do Google Drive"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">
-                  {readerEngine === 'drive' ? 'LEITOR PÁGINAS' : 'LEITOR DRIVE'}
-                </span>
-              </button>
-            )}
-
             <button
               onClick={toggleFullscreen}
               className="flex items-center gap-1.5 px-2.5 py-1 bg-[#1a1a2e] hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] border border-[#ffc531]/40 hover:border-[#ffc531] rounded-[4px] text-xs font-anton tracking-wider uppercase transition-all cursor-pointer shadow-xs"
@@ -567,41 +548,7 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
           </div>
         )}
 
-        {readerEngine === 'drive' && drivePreviewUrl ? (
-          /* Google Drive Integrated Cloud Viewer */
-          <div className="w-full h-full flex flex-col items-center justify-center p-1 sm:p-3">
-            <div className={`w-full max-w-5xl ${isFullscreen ? 'h-full' : 'h-[80vh]'} bg-black rounded-[4px] border border-[#ffc531]/30 overflow-hidden shadow-2xl relative`}>
-              <iframe
-                src={drivePreviewUrl}
-                className="w-full h-full border-0 bg-black"
-                allow="autoplay; fullscreen"
-                title={comic.title}
-              />
-            </div>
-            {!isFullscreen && (
-              <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2 text-xs">
-                {driveDirectUrl && (
-                  <a
-                    href={driveDirectUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold shadow-md transition-colors"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Abrir em Nova Aba no Drive</span>
-                  </a>
-                )}
-                <button
-                  onClick={() => setReaderEngine('canvas')}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1a2e] hover:bg-[#252542] text-[#f4ebd8] border border-[#8a8ca5]/30 font-anton text-xs uppercase tracking-wider rounded-[3px] transition-colors cursor-pointer"
-                >
-                  <BookOpen className="w-3.5 h-3.5 text-[#ffc531]" />
-                  <span>Voltar ao Leitor de Páginas</span>
-                </button>
-              </div>
-            )}
-          </div>
-        ) : viewMode === 'vertical' ? (
+        {viewMode === 'vertical' ? (
           /* Vertical Continuous Scroll Webtoon Mode */
           <div
             className={`flex flex-col items-center gap-3 py-4 ${
@@ -705,66 +652,27 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                         : 'w-full h-full object-contain object-center'
                     }`}
                   />
-                ) : drivePreviewUrl ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center relative bg-black">
-                    <iframe
-                      src={drivePreviewUrl}
-                      className="w-full h-full border-0 bg-black min-h-[70vh]"
-                      allow="autoplay; fullscreen"
-                      title={comic.title}
-                    />
-                    <div className="absolute top-2 left-2 right-2 flex items-center justify-between bg-[#12121f]/90 backdrop-blur-md px-3 py-1.5 rounded-[4px] border border-[#ffc531]/40 shadow-lg text-[11px]">
-                      <span className="text-[#ffc531] font-semibold flex items-center gap-1.5">
-                        <Zap className="w-3.5 h-3.5" />
-                        Visualizador em Nuvem Google Drive Ativo
-                      </span>
-                      <button
-                        onClick={() => {
-                          setPageError(false);
-                          setPdfRenderError(false);
-                          setImageLoaded(false);
-                        }}
-                        className="px-2 py-0.5 bg-[#1a1a2e] hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] rounded-[2px] font-anton uppercase text-[10px] transition-colors cursor-pointer"
-                      >
-                        Recarregar Páginas
-                      </button>
-                    </div>
-                  </div>
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-[#12121f] text-center select-none">
                     <div className="w-32 aspect-[2/3] mb-3 shadow-2xl rounded-[4px] overflow-hidden border border-[#ffc531]/40">
                       <ClientComicCover comic={comic} />
                     </div>
                     <h3 className="font-anton text-sm sm:text-base text-[#f4ebd8] uppercase tracking-wide mb-1">
-                      {(comic as any).storageSource === 'supabase' || (comic as any)?.supabaseFileName
-                        ? 'Arquivo na Nuvem (Supabase Storage)'
-                        : 'Arquivo na Nuvem'}
+                      Edição Preservada no Supabase Storage
                     </h3>
                     <p className="text-xs text-[#8a8ca5] max-w-sm mb-3.5">
-                      {(comic as any).storageSource === 'supabase' || (comic as any)?.supabaseFileName
-                        ? 'Esta edição está preservada diretamente no bucket Supabase Storage:'
-                        : 'Esta edição pode ser lida pelo visualizador seguro da nuvem:'}
+                      Esta edição é renderizada nativamente em alta resolução via Supabase Storage:
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-2">
-                      {(comic as any)?.supabasePublicUrl ? (
+                      {resolvedSupabaseUrl ? (
                         <a
-                          href={(comic as any).supabasePublicUrl}
+                          href={resolvedSupabaseUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-3 py-2 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold transition-colors"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Abrir no Supabase Storage</span>
-                        </a>
-                      ) : driveDirectUrl ? (
-                        <a
-                          href={driveDirectUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-3 py-2 bg-[#ffc531] hover:bg-[#ffb703] text-[#12121f] font-anton text-xs uppercase tracking-wider rounded-[3px] font-bold transition-colors"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Abrir na Nuvem</span>
+                          <span>Abrir Arquivo Supabase (.PDF)</span>
                         </a>
                       ) : null}
                       <button
@@ -772,11 +680,23 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
                           setImageLoaded(false);
                           setPageError(false);
                           setPdfRenderError(false);
+                          setPdfLoading(true);
+                          const candidate = resolvedSupabaseUrl || (comic as any).supabasePublicUrl;
+                          if (candidate) {
+                            loadPdfDocument(candidate).then((res) => {
+                              if (res && res.doc) {
+                                setPdfDoc(res.doc);
+                                setPdfTotalPages(res.numPages);
+                                setPdfLoading(false);
+                                setPdfRenderError(false);
+                              }
+                            });
+                          }
                         }}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#12121f] hover:bg-[#1a1a2e] text-[#8a8ca5] border border-[#8a8ca5]/20 font-anton text-xs uppercase tracking-wider rounded-[3px] transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1a1a2e] hover:bg-[#ffc531] text-[#f4ebd8] hover:text-[#12121f] border border-[#ffc531]/40 font-anton text-xs uppercase tracking-wider rounded-[3px] transition-colors cursor-pointer"
                       >
                         <RefreshCw className="w-3 h-3" />
-                        <span>Tentar Novamente</span>
+                        <span>Tentar Recarregar Páginas</span>
                       </button>
                     </div>
                   </div>
@@ -886,11 +806,10 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
             <div className="bg-[#1a1a2e] rounded-[4px] border border-[#8a8ca5]/20 p-1 flex items-center gap-1 shadow-md">
               <button
                 onClick={() => {
-                  setReaderEngine('canvas');
                   setViewMode('single');
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1 rounded-[3px] text-xs font-anton tracking-wider uppercase transition-colors cursor-pointer ${
-                  readerEngine === 'canvas' && viewMode === 'single'
+                  viewMode === 'single'
                     ? 'bg-[#ffc531] text-[#12121f] font-bold shadow-xs'
                     : 'text-[#8a8ca5] hover:text-[#f4ebd8]'
                 }`}
@@ -901,7 +820,6 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
 
               <button
                 onClick={() => {
-                  setReaderEngine('canvas');
                   setViewMode('double');
                   triggerToast('Modo Página Dupla ativado');
                 }}
@@ -917,7 +835,6 @@ export const ActiveReaderScreen: React.FC<ActiveReaderScreenProps> = ({
 
               <button
                 onClick={() => {
-                  setReaderEngine('canvas');
                   setViewMode('vertical');
                   triggerToast('Modo Rolo Vertical contínuo ativado');
                 }}

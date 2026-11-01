@@ -1,6 +1,6 @@
 import { ComicIssue } from '../types/comic';
 import { COMICS_DATABASE } from '../data/comics';
-import { getComicCoverFromSupabase } from '../lib/supabase';
+import { getComicCoverFromSupabase, getComicSupabaseFileUrl } from '../lib/supabase';
 
 // Client-side service to communicate with secure backend proxy (/api/acervo/*)
 // All repository details, URLs, and storage IDs are shielded server-side!
@@ -17,16 +17,24 @@ export interface AcervoStatus {
 
 function enrichWithSupabaseCovers(editions: ComicIssue[]): ComicIssue[] {
   return editions.map((c) => {
-    if (!c.coverUrl || !c.coverUrl.includes('supabase.co')) {
-      const supaCover = getComicCoverFromSupabase(c.id, (c as any).rawFileName, c.title);
+    let updated: any = { ...c };
+    if (!updated.coverUrl || !updated.coverUrl.includes('supabase.co')) {
+      const supaCover = getComicCoverFromSupabase(updated.id, updated.rawFileName, updated.title);
       if (supaCover) {
-        return {
-          ...c,
-          coverUrl: supaCover,
-        };
+        updated.coverUrl = supaCover;
       }
     }
-    return c;
+    const supaFile = updated.supabasePublicUrl || getComicSupabaseFileUrl(updated);
+    if (supaFile) {
+      updated.supabasePublicUrl = supaFile;
+      updated.storageSource = 'supabase';
+      updated.isPdf = true;
+      updated.format = 'pdf';
+    }
+    // Remove qualquer link residual de visualizador de terceiros do Drive
+    delete updated.drivePreviewUrl;
+    delete updated.driveDownloadUrl;
+    return updated as ComicIssue;
   });
 }
 
